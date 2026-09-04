@@ -1,0 +1,409 @@
+{
+ "meta": {
+  "source": "ACS 2024 5-year, tract level, aggregated to 2023 wards by tract centroid",
+  "measure": "median household income, weighted by occupied housing units",
+  "wards": 50
+ },
+ "wards": [
+  {
+   "ward": 1,
+   "tracts": 19,
+   "households": 28477,
+   "population": 56935,
+   "income": 139277,
+   "medianRent": 2048
+  },
+  {
+   "ward": 2,
+   "tracts": 8,
+   "households": 24298,
+   "population": 37428,
+   "income": 106733,
+   "medianRent": 2001
+  },
+  {
+   "ward": 3,
+   "tracts": 19,
+   "households": 26907,
+   "population": 53859,
+   "income": 84920,
+   "medianRent": 1689
+  },
+  {
+   "ward": 4,
+   "tracts": 19,
+   "households": 25655,
+   "population": 47233,
+   "income": 83280,
+   "medianRent": 1591
+  },
+  {
+   "ward": 5,
+   "tracts": 14,
+   "households": 16886,
+   "population": 37441,
+   "income": 58568,
+   "medianRent": 1318
+  },
+  {
+   "ward": 6,
+   "tracts": 17,
+   "households": 21672,
+   "population": 47593,
+   "income": 43386,
+   "medianRent": 1169
+  },
+  {
+   "ward": 7,
+   "tracts": 12,
+   "households": 16563,
+   "population": 37881,
+   "income": 48090,
+   "medianRent": 1140
+  },
+  {
+   "ward": 8,
+   "tracts": 19,
+   "households": 26206,
+   "population": 53655,
+   "income": 53359,
+   "medianRent": 1070
+  },
+  {
+   "ward": 9,
+   "tracts": 17,
+   "households": 17291,
+   "population": 44276,
+   "income": 48904,
+   "medianRent": 1149
+  },
+  {
+   "ward": 10,
+   "tracts": 15,
+   "households": 18616,
+   "population": 51579,
+   "income": 50242,
+   "medianRent": 1042
+  },
+  {
+   "ward": 11,
+   "tracts": 18,
+   "households": 23603,
+   "population": 57716,
+   "income": 72922,
+   "medianRent": 1287
+  },
+  {
+   "ward": 12,
+   "tracts": 14,
+   "households": 19154,
+   "population": 54712,
+   "income": 64380,
+   "medianRent": 1149
+  },
+  {
+   "ward": 13,
+   "tracts": 13,
+   "households": 19405,
+   "population": 53082,
+   "income": 81052,
+   "medianRent": 1356
+  },
+  {
+   "ward": 14,
+   "tracts": 12,
+   "households": 17186,
+   "population": 57521,
+   "income": 63247,
+   "medianRent": 1068
+  },
+  {
+   "ward": 15,
+   "tracts": 13,
+   "households": 10933,
+   "population": 33399,
+   "income": 53262,
+   "medianRent": 1190
+  },
+  {
+   "ward": 16,
+   "tracts": 21,
+   "households": 15257,
+   "population": 40895,
+   "income": 41657,
+   "medianRent": 1125
+  },
+  {
+   "ward": 17,
+   "tracts": 18,
+   "households": 18891,
+   "population": 49696,
+   "income": 42770,
+   "medianRent": 1148
+  },
+  {
+   "ward": 18,
+   "tracts": 13,
+   "households": 20745,
+   "population": 64177,
+   "income": 76964,
+   "medianRent": 1225
+  },
+  {
+   "ward": 19,
+   "tracts": 15,
+   "households": 20480,
+   "population": 52781,
+   "income": 111910,
+   "medianRent": 1603
+  },
+  {
+   "ward": 20,
+   "tracts": 26,
+   "households": 22951,
+   "population": 56989,
+   "income": 43507,
+   "medianRent": 1165
+  },
+  {
+   "ward": 21,
+   "tracts": 20,
+   "households": 23528,
+   "population": 62734,
+   "income": 60464,
+   "medianRent": 1290
+  },
+  {
+   "ward": 22,
+   "tracts": 16,
+   "households": 16280,
+   "population": 50380,
+   "income": 59289,
+   "medianRent": 1127
+  },
+  {
+   "ward": 23,
+   "tracts": 11,
+   "households": 14250,
+   "population": 47931,
+   "income": 86626,
+   "medianRent": 1274
+  },
+  {
+   "ward": 24,
+   "tracts": 18,
+   "households": 15144,
+   "population": 48456,
+   "income": 48134,
+   "medianRent": 1251
+  },
+  {
+   "ward": 25,
+   "tracts": 14,
+   "households": 18597,
+   "population": 45595,
+   "income": 71874,
+   "medianRent": 1278
+  },
+  {
+   "ward": 26,
+   "tracts": 21,
+   "households": 18868,
+   "population": 48970,
+   "income": 80205,
+   "medianRent": 1504
+  },
+  {
+   "ward": 27,
+   "tracts": 20,
+   "households": 29031,
+   "population": 62006,
+   "income": 105742,
+   "medianRent": 1859
+  },
+  {
+   "ward": 28,
+   "tracts": 29,
+   "households": 24398,
+   "population": 63361,
+   "income": 60062,
+   "medianRent": 1393
+  },
+  {
+   "ward": 29,
+   "tracts": 10,
+   "households": 16955,
+   "population": 42645,
+   "income": 54571,
+   "medianRent": 1232
+  },
+  {
+   "ward": 30,
+   "tracts": 12,
+   "households": 15888,
+   "population": 44207,
+   "income": 89129,
+   "medianRent": 1330
+  },
+  {
+   "ward": 31,
+   "tracts": 14,
+   "households": 18143,
+   "population": 52375,
+   "income": 71340,
+   "medianRent": 1287
+  },
+  {
+   "ward": 32,
+   "tracts": 24,
+   "households": 26185,
+   "population": 58722,
+   "income": 171079,
+   "medianRent": 2192
+  },
+  {
+   "ward": 33,
+   "tracts": 14,
+   "households": 22901,
+   "population": 57483,
+   "income": 89626,
+   "medianRent": 1486
+  },
+  {
+   "ward": 34,
+   "tracts": 6,
+   "households": 26851,
+   "population": 41963,
+   "income": 127771,
+   "medianRent": 2367
+  },
+  {
+   "ward": 35,
+   "tracts": 17,
+   "households": 25175,
+   "population": 59884,
+   "income": 91067,
+   "medianRent": 1624
+  },
+  {
+   "ward": 36,
+   "tracts": 21,
+   "households": 30728,
+   "population": 82575,
+   "income": 91731,
+   "medianRent": 1638
+  },
+  {
+   "ward": 37,
+   "tracts": 12,
+   "households": 16637,
+   "population": 49284,
+   "income": 53076,
+   "medianRent": 1126
+  },
+  {
+   "ward": 38,
+   "tracts": 15,
+   "households": 23128,
+   "population": 59447,
+   "income": 91508,
+   "medianRent": 1381
+  },
+  {
+   "ward": 39,
+   "tracts": 15,
+   "households": 25594,
+   "population": 64482,
+   "income": 100717,
+   "medianRent": 1381
+  },
+  {
+   "ward": 40,
+   "tracts": 13,
+   "households": 25936,
+   "population": 59217,
+   "income": 81841,
+   "medianRent": 1503
+  },
+  {
+   "ward": 41,
+   "tracts": 12,
+   "households": 23065,
+   "population": 57103,
+   "income": 106553,
+   "medianRent": 1569
+  },
+  {
+   "ward": 42,
+   "tracts": 9,
+   "households": 40202,
+   "population": 64062,
+   "income": 132459,
+   "medianRent": 2574
+  },
+  {
+   "ward": 43,
+   "tracts": 17,
+   "households": 32061,
+   "population": 60433,
+   "income": 136023,
+   "medianRent": 2154
+  },
+  {
+   "ward": 44,
+   "tracts": 19,
+   "households": 33446,
+   "population": 55454,
+   "income": 107086,
+   "medianRent": 1903
+  },
+  {
+   "ward": 45,
+   "tracts": 11,
+   "households": 21619,
+   "population": 52890,
+   "income": 100330,
+   "medianRent": 1440
+  },
+  {
+   "ward": 46,
+   "tracts": 11,
+   "households": 30214,
+   "population": 51619,
+   "income": 79038,
+   "medianRent": 1523
+  },
+  {
+   "ward": 47,
+   "tracts": 20,
+   "households": 29002,
+   "population": 59759,
+   "income": 121095,
+   "medianRent": 1710
+  },
+  {
+   "ward": 48,
+   "tracts": 16,
+   "households": 33776,
+   "population": 59507,
+   "income": 67509,
+   "medianRent": 1388
+  },
+  {
+   "ward": 49,
+   "tracts": 12,
+   "households": 25763,
+   "population": 53787,
+   "income": 63939,
+   "medianRent": 1364
+  },
+  {
+   "ward": 50,
+   "tracts": 10,
+   "households": 18989,
+   "population": 58504,
+   "income": 73280,
+   "medianRent": 1373
+  }
+ ]
+}

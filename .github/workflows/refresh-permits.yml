@@ -1,0 +1,63 @@
+name: Refresh permit data
+
+# Monthly on the 3rd at 08:00 UTC. Permits are issued continuously and the
+# portal updates daily, but the map reads at the year level, so monthly is
+# plenty. The 3rd gives the city a couple of days to settle month-end entries.
+on:
+  schedule:
+    - cron: "0 8 3 * *"
+  workflow_dispatch: {} # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install shapely certifi
+
+      - name: Re-run the importer
+        # The script fetches from the Chicago open data API, validates that
+        # ward reassignment still agrees with recent permits at >=99%, and
+        # refuses to write if the pull is materially smaller than what is
+        # already committed. Any of those failing fails the job.
+        run: python scripts/import_permits.py src/data/permits.json
+
+      - name: Check whether anything changed
+        id: diff
+        run: |
+          if git diff --quiet -- src/data/permits.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No change in permit data."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat -- src/data/permits.json
+          fi
+
+      - name: Verify the site still builds with the new data
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+
+      - name: Commit
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/permits.json
+          git commit -m "Refresh permit data ($(date -u +%Y-%m-%d))
+
+          Automated monthly pull from the Chicago open data API. The importer
+          validated ward reassignment and the data-regression guard before
+          writing; the site typechecked and built against the new data."
+          git push

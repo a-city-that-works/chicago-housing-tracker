@@ -1,0 +1,105 @@
+/*
+ * Design tokens anchored on the two partner sites.
+ *
+ *   Chicago Growth Project  — Geologica, white ground, cool near-black ink,
+ *                             azure accent #00abe5, square buttons,
+ *                             uppercase tracked eyebrows in the accent.
+ *   Abundant Housing IL     — geometric sans, cool ink #111827, teal #36b3a8
+ *                             and coral #d85a42 accents.
+ *
+ * Both converge on: geometric sans, white ground, cool dark ink, one saturated
+ * cyan-family accent. That convergence is the base. AHI's coral is adopted as
+ * the selection / "worse" colour, which keeps it clearly apart from the cyan
+ * data ramp.
+ *
+ * Contrast on white: ink 19.1:1, muted 6.3:1, accent-text 5.6:1, coral-text
+ * 5.4:1. Brand azure (2.6:1) is used only for fills, rules and large marks —
+ * never for small text.
+ */
+:root {
+  --ground: #ffffff;
+  --surface: #f3f6f7;
+  --surface-2: #f8fbfb;
+  --ink: #0a1014;
+  --ink-2: #151e24;
+  --muted: #56626a;
+  --rule: #dde4e7;
+  --rule-soft: #eaeff1;
+
+  /* Brand azure — fills, underlines, graphic marks. */
+  --accent: #00abe5;
+  /* Accessible azure — links, small labels, anything text-sized. */
+  --accent-text: #00718f;
+  --accent-soft: rgba(0, 171, 229, 0.1);
+
+  /* AHI coral — selection state and the "less affordable" pole. */
+  --highlight: #d85a42;
+  --highlight-text: #b8442f;
+  --highlight-soft: rgba(216, 90, 66, 0.12);
+
+  --sans: "Geologica", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --measure: 660px;
+
+  font: 400 17px/1.6 var(--sans);
+  color: var(--ink);
+  background: var(--ground);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--sans);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent-text);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  color: var(--ink);
+}
+
+button {
+  font-family: var(--sans);
+}
+
+/* Uppercase tracked label in the accent — the shared partner treatment. */
+.eyebrow {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--accent-text);
+}
+
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
