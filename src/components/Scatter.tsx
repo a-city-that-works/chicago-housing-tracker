@@ -54,6 +54,13 @@ const PH = H - M.top - M.bottom;
 const BAND_H = 34;
 const BREAK_GAP = 16;
 
+/** Right edge of the y tick labels. */
+const TICK_X = -10;
+/** Height of the gap left in the axis spine for the break mark. */
+const BREAK_NOTCH = 15;
+/** Clearance between the highest off-scale point and the band's top gridline. */
+const BAND_HEADROOM = 0.1;
+
 const DOT = "#0d96c9";
 const DOT_ACTIVE = "#d85a42";
 
@@ -86,8 +93,8 @@ function trend(points: ScatterPoint[]) {
   return { slope, intercept: my - slope * mx };
 }
 
-/** Small wave across the y axis, marking where the scale jumps. */
-function squiggle(y: number, width = 22, amp = 3.2, humps = 4): string {
+/** Small wave crossing the y axis where the scale jumps. */
+function squiggle(y: number, width = 26, amp = 3.4, humps = 4): string {
   const seg = width / humps;
   let d = `M${-width / 2},${y}`;
   for (let i = 0; i < humps; i++) {
@@ -181,12 +188,15 @@ export function Scatter({
     // the band and the gap; everything on-scale is drawn into what's left.
     const offset = clipped ? BAND_H + BREAK_GAP : 0;
     const mainH = PH - offset;
-    // The band is a second, compressed piece of the same axis: it runs from the
-    // top of the main scale up to one tick past the largest off-scale value, so
-    // it carries a real gridline rather than floating unlabelled.
+    // The band is a second, compressed piece of the same axis, carrying its own
+    // gridline. Its top is the first round tick that clears the largest
+    // off-scale value by at least 10%, so that point never sits on the line.
     const step = yTicks.length > 1 ? yTicks[1] - yTicks[0] : top;
     const offMax = Math.max(...points.map((p) => p.y), 0);
-    const bandTop = Math.floor(offMax / step) * step + step;
+    const bandTop = Math.max(
+      top + step,
+      Math.ceil((offMax * (1 + BAND_HEADROOM)) / step) * step
+    );
     return {
       xs: (v: number) => ((v - xMin) / (xTicks[xTicks.length - 1] - xMin)) * PW,
       ys: (v: number) => offset + mainH * (1 - Math.min(v, top) / top),
@@ -197,7 +207,7 @@ export function Scatter({
       yTop: top,
       bandTop,
       clipped,
-      breakY: offset - BREAK_GAP / 2,
+      breakY: offset / 2,
       line: trend(points),
     };
   }, [points]);
@@ -222,7 +232,7 @@ export function Scatter({
         {yt.map((t) => (
           <g key={`y${t}`}>
             <line x1={0} x2={PW} y1={ys(t)} y2={ys(t)} stroke="var(--rule-soft)" strokeWidth={1} />
-            <text x={-10} y={ys(t) + 4} textAnchor="end" className="sc-axis">
+            <text x={TICK_X} y={ys(t) + 4} textAnchor="end" className="sc-axis">
               {fmtY(t)}
             </text>
           </g>
@@ -230,7 +240,7 @@ export function Scatter({
         {clipped && (
           <g>
             <line x1={0} x2={PW} y1={0} y2={0} stroke="var(--rule-soft)" strokeWidth={1} />
-            <text x={-10} y={4} textAnchor="end" className="sc-axis">
+            <text x={TICK_X} y={4} textAnchor="end" className="sc-axis">
               {fmtY(bandTop)}
             </text>
           </g>
@@ -241,6 +251,14 @@ export function Scatter({
           </text>
         ))}
         <line x1={0} x2={PW} y1={PH} y2={PH} stroke="var(--rule)" strokeWidth={1} />
+        {clipped ? (
+          <>
+            <line x1={0} x2={0} y1={0} y2={breakY - BREAK_NOTCH / 2} stroke="var(--rule)" strokeWidth={1} />
+            <line x1={0} x2={0} y1={breakY + BREAK_NOTCH / 2} y2={PH} stroke="var(--rule)" strokeWidth={1} />
+          </>
+        ) : (
+          <line x1={0} x2={0} y1={0} y2={PH} stroke="var(--rule)" strokeWidth={1} />
+        )}
 
         {clipped && (
           // marks the jump on the axis only, so the plot area stays clean
