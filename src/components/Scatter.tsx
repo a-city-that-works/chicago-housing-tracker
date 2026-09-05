@@ -51,8 +51,8 @@ const PW = W - M.left - M.right;
 const PH = H - M.top - M.bottom;
 
 /** Band above the break where off-scale points sit, and the blank gap below it. */
-const BAND_H = 26;
-const BREAK_GAP = 20;
+const BAND_H = 34;
+const BREAK_GAP = 16;
 
 const DOT = "#0d96c9";
 const DOT_ACTIVE = "#d85a42";
@@ -84,6 +84,16 @@ function trend(points: ScatterPoint[]) {
   if (!den) return null;
   const slope = points.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0) / den;
   return { slope, intercept: my - slope * mx };
+}
+
+/** Small wave across the y axis, marking where the scale jumps. */
+function squiggle(y: number, width = 22, amp = 3.2, humps = 4): string {
+  const seg = width / humps;
+  let d = `M${-width / 2},${y}`;
+  for (let i = 0; i < humps; i++) {
+    d += ` q${(seg / 2).toFixed(2)},${i % 2 === 0 ? -amp : amp} ${seg.toFixed(2)},0`;
+  }
+  return d;
 }
 
 interface Placed {
@@ -161,7 +171,7 @@ export function Scatter({
   labelled = [],
   maxLabels = 12,
 }: Props) {
-  const { xs, ys, xt, yt, yTop, clipped, breakY, bandY, line } = useMemo(() => {
+  const { xs, ys, ysOff, xt, yt, yTop, bandTop, clipped, breakY, line } = useMemo(() => {
     const xMin = 0;
     const xTicks = ticks(xMin, Math.max(...points.map((p) => p.x)));
     const { max: yMax, clipped } = domainMax(points.map((p) => p.y));
@@ -171,15 +181,23 @@ export function Scatter({
     // the band and the gap; everything on-scale is drawn into what's left.
     const offset = clipped ? BAND_H + BREAK_GAP : 0;
     const mainH = PH - offset;
+    // The band is a second, compressed piece of the same axis: it runs from the
+    // top of the main scale up to one tick past the largest off-scale value, so
+    // it carries a real gridline rather than floating unlabelled.
+    const step = yTicks.length > 1 ? yTicks[1] - yTicks[0] : top;
+    const offMax = Math.max(...points.map((p) => p.y), 0);
+    const bandTop = Math.floor(offMax / step) * step + step;
     return {
       xs: (v: number) => ((v - xMin) / (xTicks[xTicks.length - 1] - xMin)) * PW,
       ys: (v: number) => offset + mainH * (1 - Math.min(v, top) / top),
+      /** Position within the band, on its own scale from `top` to `bandTop`. */
+      ysOff: (v: number) => BAND_H * (1 - (v - top) / (bandTop - top)),
       xt: xTicks,
       yt: yTicks,
       yTop: top,
+      bandTop,
       clipped,
       breakY: offset - BREAK_GAP / 2,
-      bandY: BAND_H / 2,
       line: trend(points),
     };
   }, [points]);
@@ -190,13 +208,13 @@ export function Scatter({
       return {
         ward: p.ward,
         cx: xs(p.x),
-        cy: off ? bandY : ys(p.y),
+        cy: off ? ysOff(p.y) : ys(p.y),
         text: off ? `${p.ward} · ${fmtY(p.y)}` : String(p.ward),
         forced: off,
       };
     });
     return placeLabels(prepared, labelled, maxLabels);
-  }, [points, xs, ys, yTop, bandY, fmtY, labelled, maxLabels]);
+  }, [points, xs, ys, ysOff, yTop, fmtY, labelled, maxLabels]);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="scatter" role="img" aria-label={`${yLabel} against ${xLabel}`}>
@@ -209,6 +227,14 @@ export function Scatter({
             </text>
           </g>
         ))}
+        {clipped && (
+          <g>
+            <line x1={0} x2={PW} y1={0} y2={0} stroke="var(--rule-soft)" strokeWidth={1} />
+            <text x={-10} y={4} textAnchor="end" className="sc-axis">
+              {fmtY(bandTop)}
+            </text>
+          </g>
+        )}
         {xt.map((t) => (
           <text key={`x${t}`} x={xs(t)} y={PH + 20} textAnchor="middle" className="sc-axis">
             {fmtX(t)}
@@ -217,12 +243,14 @@ export function Scatter({
         <line x1={0} x2={PW} y1={PH} y2={PH} stroke="var(--rule)" strokeWidth={1} />
 
         {clipped && (
-          // the conventional pair of slashes, on the axis only — the plot area
-          // stays clean, and the off-scale point carries its own figure
-          <g stroke="var(--muted)" strokeWidth={1.25} strokeLinecap="round">
-            <line x1={-5} y1={breakY + 1} x2={5} y2={breakY - 5} />
-            <line x1={-5} y1={breakY + 6} x2={5} y2={breakY} />
-          </g>
+          // marks the jump on the axis only, so the plot area stays clean
+          <path
+            d={squiggle(breakY)}
+            fill="none"
+            stroke="var(--muted)"
+            strokeWidth={1.25}
+            strokeLinecap="round"
+          />
         )}
 
         {line && (
@@ -242,7 +270,7 @@ export function Scatter({
           const active = p.ward === selectedWard || p.ward === hoveredWard;
           const off = p.y > yTop;
           const cx = xs(p.x);
-          const cy = off ? bandY : ys(p.y);
+          const cy = off ? ysOff(p.y) : ys(p.y);
           const handlers = {
             style: { cursor: "pointer" },
             onMouseEnter: () => onHoverWard(p.ward),
@@ -257,31 +285,18 @@ export function Scatter({
           );
           return (
             <g key={p.ward}>
-              {off ? (
-                // pinned to the top edge, drawn as an upward marker
-                <polygon
-                  points={`${cx},${cy - 9} ${cx - 7},${cy + 4} ${cx + 7},${cy + 4}`}
-                  fill={active ? DOT_ACTIVE : DOT}
-                  stroke="var(--ground)"
-                  strokeWidth={1.5}
-                  {...handlers}
-                >
-                  {tip}
-                </polygon>
-              ) : (
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={active ? 8 : 5}
-                  fill={active ? DOT_ACTIVE : DOT}
-                  fillOpacity={active ? 1 : 0.72}
-                  stroke="var(--ground)"
-                  strokeWidth={1.5}
-                  {...handlers}
-                >
-                  {tip}
-                </circle>
-              )}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={active ? 8 : 5}
+                fill={active ? DOT_ACTIVE : DOT}
+                fillOpacity={active ? 1 : 0.72}
+                stroke="var(--ground)"
+                strokeWidth={1.5}
+                {...handlers}
+              >
+                {tip}
+              </circle>
             </g>
           );
         })}
