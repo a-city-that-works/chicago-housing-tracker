@@ -64,18 +64,17 @@ export function Home() {
         <div className="suggest">
           <h2 className="suggest-heading">What else?</h2>
           <p className="suggest-body">
-            These are a starting point, not the whole picture. If there&rsquo;s a cut of
-            Chicago housing data you want and can&rsquo;t find &mdash; here or anywhere
-            &mdash; tell us and we&rsquo;ll look into building it.
+            These are a starting point. If there&rsquo;s another cut of Chicago housing data
+            you think we ought to be looking at here &mdash;{" "}
+            <a
+              href={`mailto:${SUGGEST_EMAIL}?subject=${encodeURIComponent(
+                "Chicago Housing Tracker: suggestion"
+              )}`}
+            >
+              let us know
+            </a>
+            !
           </p>
-          <a
-            className="suggest-cta"
-            href={`mailto:${SUGGEST_EMAIL}?subject=${encodeURIComponent(
-              "Chicago Housing Tracker: suggestion"
-            )}`}
-          >
-            {SUGGEST_EMAIL}
-          </a>
         </div>
       </section>
 
