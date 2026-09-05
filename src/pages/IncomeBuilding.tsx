@@ -160,9 +160,9 @@ export function IncomeBuilding() {
               {mfhOnly
                 ? "Units in buildings of two or more homes, per year, "
                 : "New housing units approved per year, "}
-              {from}&ndash;{to}. Where one ward runs far ahead of the rest it is pinned above the
-              axis, labelled with its real figure, so the others stay readable. Hover any point for
-              its numbers.
+              {from}&ndash;{to}. Where one ward runs far ahead of the rest, the scale breaks and
+              that ward is drawn above the break, labelled with its real figure, so the others
+              stay readable. Hover any point for its numbers.
             </p>
           </figcaption>
           <Scatter

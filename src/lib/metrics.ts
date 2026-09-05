@@ -42,18 +42,65 @@ export function getPctChange(
   return p2026 - p2025;
 }
 
-export function getRank(ward: WardRecord, year: YearKey): number | null {
-  const detail = getYearDetail(ward, year);
-  return detail?.ranks.combinedAffordable60ARO ?? null;
-}
-
-export function getRankChange(ward: WardRecord): number | null {
-  return ward.comparison?.rankChange ?? null;
-}
-
 export function getMetricValue(ward: WardRecord, filters: FilterState): number | null {
   if (filters.viewMode === "change") return getPctChange(ward, filters.metricGroup, filters.threshold);
   return getGroupPct(ward, filters.year, filters.metricGroup, filters.threshold);
+}
+
+/**
+ * Rank a set of wards by one value, most affordable first. Ties share a rank
+ * and the next rank skips (1, 2, 2, 4) so a rank never implies a gap the data
+ * doesn't support.
+ */
+function rankBy(scored: { ward: number; value: number | null }[]): Map<number, number> {
+  const ranked = scored.filter((s): s is { ward: number; value: number } => s.value != null);
+  ranked.sort((a, b) => b.value - a.value);
+  const out = new Map<number, number>();
+  ranked.forEach((s, i) => {
+    const prev = ranked[i - 1];
+    out.set(s.ward, prev && s.value === prev.value ? out.get(prev.ward)! : i + 1);
+  });
+  return out;
+}
+
+/**
+ * Rank wards by whatever metric is currently on screen.
+ *
+ * The source sheet ships precomputed ranks, but only for five of the
+ * combinations the controls can produce — there is no combined/100% AMI rank at
+ * all — so reading a fixed key showed the combined 60% AMI ranking no matter
+ * what the toggles said. Ranking the displayed value is correct by construction
+ * and covers "change" mode too, where a rank of 1 is the biggest improvement.
+ */
+export function getRanks(wards: WardRecord[], filters: FilterState): Map<number, number> {
+  return rankBy(wards.map((w) => ({ ward: w.ward, value: getMetricValue(w, filters) })));
+}
+
+/**
+ * Year-over-year rank movement under the current group and threshold, positive
+ * meaning the ward moved toward rank 1. Recomputed rather than read from
+ * `comparison.rankChange`, which is likewise fixed to combined 60% AMI.
+ */
+export function getRankChanges(
+  wards: WardRecord[],
+  filters: FilterState
+): Map<number, number> {
+  const ranksFor = (year: YearKey) =>
+    rankBy(
+      wards.map((w) => ({
+        ward: w.ward,
+        value: getGroupPct(w, year, filters.metricGroup, filters.threshold),
+      }))
+    );
+  const before = ranksFor("2025");
+  const after = ranksFor("2026");
+  const out = new Map<number, number>();
+  for (const w of wards) {
+    const a = before.get(w.ward);
+    const b = after.get(w.ward);
+    if (a != null && b != null) out.set(w.ward, a - b);
+  }
+  return out;
 }
 
 export function getListingsCount(ward: WardRecord, year: YearKey, group: MetricGroup): number | null {

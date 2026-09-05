@@ -15,8 +15,8 @@ import {
   getListingsCount,
   getMedian,
   getPctChange,
-  getRank,
-  getRankChange,
+  getRanks,
+  getRankChanges,
   THRESHOLD_LABELS,
 } from "../lib/metrics";
 
@@ -76,6 +76,10 @@ export function WardTable({ wards, filters, selectedWard, hoveredWard, onSelectW
   const [sorting, setSorting] = useState<SortingState>([{ id: "pct", desc: filters.viewMode !== "change" }]);
   const [search, setSearch] = useState("");
 
+  // ranked across all wards, so both columns follow the controls above
+  const ranks = useMemo(() => getRanks(wards, filters), [wards, filters]);
+  const rankChanges = useMemo(() => getRankChanges(wards, filters), [wards, filters]);
+
   const rows = useMemo<Row[]>(() => {
     return wards.map((w) => {
       const counts = getGroupCounts(w, filters.year, filters.metricGroup);
@@ -91,11 +95,11 @@ export function WardTable({ wards, filters, selectedWard, hoveredWard, onSelectW
             ? getPctChange(w, filters.metricGroup, filters.threshold)
             : getGroupPct(w, filters.year, filters.metricGroup, filters.threshold),
         pctChange: getPctChange(w, filters.metricGroup, filters.threshold),
-        rank: getRank(w, filters.year),
-        rankChange: getRankChange(w),
+        rank: ranks.get(w.ward) ?? null,
+        rankChange: rankChanges.get(w.ward) ?? null,
       };
     });
-  }, [wards, filters]);
+  }, [wards, filters, ranks, rankChanges]);
 
   const columns = useMemo(
     () => [
@@ -124,7 +128,8 @@ export function WardTable({ wards, filters, selectedWard, hoveredWard, onSelectW
         cell: (info) => (filters.viewMode === "change" ? fmtSignedPct(info.getValue()) : fmtPct(info.getValue())),
       }),
       columnHelper.accessor("rank", {
-        header: `Rank (${filters.year})`,
+        header:
+          filters.viewMode === "change" ? "Rank (change)" : `Rank (${filters.year})`,
         cell: (info) => fmtRank(info.getValue()),
       }),
       columnHelper.accessor("rankChange", {

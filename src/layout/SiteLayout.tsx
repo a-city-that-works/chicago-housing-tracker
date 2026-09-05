@@ -51,7 +51,6 @@ export function SiteLayout() {
               Newsletter
             </a>
             <a href={`${PARENT_URL}/pac`}>PAC</a>
-            <a href={`${PARENT_URL}/contact`}>Contact</a>
           </div>
         </div>
       </footer>

@@ -578,3 +578,39 @@
     gap: 6px;
   }
 }
+
+/* "What else?" — suggestion prompt between the section cards and coverage */
+
+.suggest {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  padding: 22px 26px 24px;
+}
+
+.suggest-heading {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.suggest-body {
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-top: 8px;
+}
+
+.suggest-cta {
+  display: inline-block;
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.suggest-cta:hover {
+  color: var(--ink);
+}

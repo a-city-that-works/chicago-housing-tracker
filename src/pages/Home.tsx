@@ -4,6 +4,7 @@ import { SECTIONS } from "../sections";
 import { BLOG_POSTS, BLOG_URL, POSTS_VISIBLE, groupByYear, postUrl } from "../data/blogPosts";
 
 const IHS_URL = "https://www.housingstudies.org/";
+const SUGGEST_EMAIL = "citythatworks@substack.com";
 
 export function Home() {
   const [showAllPosts, setShowAllPosts] = useState(false);
@@ -56,6 +57,25 @@ export function Home() {
               </span>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="home-section">
+        <div className="suggest">
+          <h2 className="suggest-heading">What else?</h2>
+          <p className="suggest-body">
+            These are a starting point, not the whole picture. If there&rsquo;s a cut of
+            Chicago housing data you want and can&rsquo;t find &mdash; here or anywhere
+            &mdash; tell us and we&rsquo;ll look into building it.
+          </p>
+          <a
+            className="suggest-cta"
+            href={`mailto:${SUGGEST_EMAIL}?subject=${encodeURIComponent(
+              "Chicago Housing Tracker: suggestion"
+            )}`}
+          >
+            {SUGGEST_EMAIL}
+          </a>
         </div>
       </section>
 

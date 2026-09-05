@@ -68,7 +68,9 @@ export function Affordability() {
           />
           <div className="map-overlay">
             <Legend filters={filters} />
-            {activeWard && <WardDetail ward={activeWard} filters={filters} />}
+            {activeWard && (
+              <WardDetail ward={activeWard} wards={wardsData.wards} filters={filters} />
+            )}
           </div>
         </div>
 

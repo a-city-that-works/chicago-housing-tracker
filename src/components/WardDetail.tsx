@@ -4,25 +4,29 @@ import {
   getListingsCount,
   getMedian,
   getPctChange,
-  getRank,
-  getRankChange,
+  getRanks,
+  getRankChanges,
   THRESHOLD_LABELS,
 } from "../lib/metrics";
 
 interface Props {
   ward: WardRecord;
+  /** All wards — a rank only means something relative to the rest of the field. */
+  wards: WardRecord[];
   filters: FilterState;
 }
 
-export function WardDetail({ ward, filters }: Props) {
+export function WardDetail({ ward, wards, filters }: Props) {
   const pct2025 = getGroupPct(ward, "2025", filters.metricGroup, filters.threshold);
   const pct2026 = getGroupPct(ward, "2026", filters.metricGroup, filters.threshold);
   const change = getPctChange(ward, filters.metricGroup, filters.threshold);
   const pctCurrent = filters.year === "2025" ? pct2025 : pct2026;
-  const rankChange = getRankChange(ward);
+  const ranks = getRanks(wards, filters);
+  const rankChange = getRankChanges(wards, filters).get(ward.ward) ?? null;
   const listings = getListingsCount(ward, filters.year, filters.metricGroup);
   const median = getMedian(ward, filters.year, filters.metricGroup);
-  const rank = getRank(ward, filters.year);
+  const rank = ranks.get(ward.ward) ?? null;
+  const ranked = ranks.size;
 
   return (
     <div className="ward-detail">
@@ -38,8 +42,10 @@ export function WardDetail({ ward, filters }: Props) {
           <span className="stat-value">{pctCurrent != null ? `${pctCurrent.toFixed(1)}%` : "—"}</span>
         </div>
         <div className="stat">
-          <span className="stat-label">Rank ({filters.year})</span>
-          <span className="stat-value">{rank != null ? `#${rank} of 50` : "—"}</span>
+          <span className="stat-label">
+            Rank ({filters.viewMode === "change" ? "change" : filters.year})
+          </span>
+          <span className="stat-value">{rank != null ? `#${rank} of ${ranked}` : "—"}</span>
         </div>
         <div className="stat">
           <span className="stat-label">Listings</span>

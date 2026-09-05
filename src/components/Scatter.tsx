@@ -25,9 +25,9 @@ interface Props {
 
 /**
  * A single runaway value flattens everyone else against the axis. Where the
- * largest point is far clear of the next one, the scale is set by the next
- * one instead and the outlier is pinned to the top edge — visible and
- * labelled, never silently dropped.
+ * largest point is far clear of the next one, the scale is set by the next one
+ * instead and the outlier moves into a band above an explicit axis break —
+ * visible and labelled with its true figure, never silently dropped.
  */
 const OUTLIER_RATIO = 1.6;
 
@@ -49,6 +49,10 @@ const H = 390;
 const M = { top: 18, right: 20, bottom: 52, left: 66 };
 const PW = W - M.left - M.right;
 const PH = H - M.top - M.bottom;
+
+/** Band above the break where off-scale points sit, and the blank gap below it. */
+const BAND_H = 26;
+const BREAK_GAP = 20;
 
 const DOT = "#0d96c9";
 const DOT_ACTIVE = "#d85a42";
@@ -80,6 +84,18 @@ function trend(points: ScatterPoint[]) {
   if (!den) return null;
   const slope = points.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0) / den;
   return { slope, intercept: my - slope * mx };
+}
+
+/** A sawtooth across the plot — the conventional mark for a discontinuous scale. */
+function zigzag(width: number, y: number, step = 13, amp = 4): string {
+  const d = [`M0,${y}`];
+  let up = true;
+  for (let x = step / 2; x < width; x += step / 2) {
+    d.push(`L${x.toFixed(1)},${(y + (up ? -amp : amp)).toFixed(1)}`);
+    up = !up;
+  }
+  d.push(`L${width},${y}`);
+  return d.join(" ");
 }
 
 interface Placed {
@@ -157,20 +173,25 @@ export function Scatter({
   labelled = [],
   maxLabels = 12,
 }: Props) {
-  const { xs, ys, xt, yt, yTop, clipped, line } = useMemo(() => {
+  const { xs, ys, xt, yt, yTop, clipped, breakY, bandY, line } = useMemo(() => {
     const xMin = 0;
     const xTicks = ticks(xMin, Math.max(...points.map((p) => p.x)));
     const { max: yMax, clipped } = domainMax(points.map((p) => p.y));
     const yTicks = ticks(0, yMax);
     const top = yTicks[yTicks.length - 1];
+    // When the scale is broken, the continuous part of the axis starts below
+    // the band and the gap; everything on-scale is drawn into what's left.
+    const offset = clipped ? BAND_H + BREAK_GAP : 0;
+    const mainH = PH - offset;
     return {
       xs: (v: number) => ((v - xMin) / (xTicks[xTicks.length - 1] - xMin)) * PW,
-      // clamp so an off-scale point sits on the top edge rather than above it
-      ys: (v: number) => PH - (Math.min(v, top) / top) * PH,
+      ys: (v: number) => offset + mainH * (1 - Math.min(v, top) / top),
       xt: xTicks,
       yt: yTicks,
       yTop: top,
       clipped,
+      breakY: offset - BREAK_GAP / 2,
+      bandY: BAND_H / 2,
       line: trend(points),
     };
   }, [points]);
@@ -181,13 +202,13 @@ export function Scatter({
       return {
         ward: p.ward,
         cx: xs(p.x),
-        cy: ys(p.y),
+        cy: off ? bandY : ys(p.y),
         text: off ? `${p.ward} · ${fmtY(p.y)}` : String(p.ward),
         forced: off,
       };
     });
     return placeLabels(prepared, labelled, maxLabels);
-  }, [points, xs, ys, yTop, fmtY, labelled, maxLabels]);
+  }, [points, xs, ys, yTop, bandY, fmtY, labelled, maxLabels]);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="scatter" role="img" aria-label={`${yLabel} against ${xLabel}`}>
@@ -207,6 +228,15 @@ export function Scatter({
         ))}
         <line x1={0} x2={PW} y1={PH} y2={PH} stroke="var(--rule)" strokeWidth={1} />
 
+        {clipped && (
+          <g>
+            <path d={zigzag(PW, breakY)} fill="none" stroke="var(--rule)" strokeWidth={1.25} />
+            <text x={PW} y={breakY - 8} textAnchor="end" className="sc-clip-note">
+              scale break
+            </text>
+          </g>
+        )}
+
         {line && (
           <line
             x1={xs(xt[0])}
@@ -224,7 +254,7 @@ export function Scatter({
           const active = p.ward === selectedWard || p.ward === hoveredWard;
           const off = p.y > yTop;
           const cx = xs(p.x);
-          const cy = ys(p.y);
+          const cy = off ? bandY : ys(p.y);
           const handlers = {
             style: { cursor: "pointer" },
             onMouseEnter: () => onHoverWard(p.ward),
@@ -234,7 +264,7 @@ export function Scatter({
           const tip = (
             <title>
               {`Ward ${p.ward}\n${xLabel}: ${fmtX(p.x)}\n${yLabel}: ${fmtY(p.y)}` +
-                (off ? "  (above the axis)" : "")}
+                (off ? "  (above the scale break)" : "")}
             </title>
           );
           return (
@@ -282,12 +312,6 @@ export function Scatter({
             {l.text}
           </text>
         ))}
-
-        {clipped && (
-          <text x={PW} y={-6} textAnchor="end" className="sc-clip-note">
-            ▲ above the axis
-          </text>
-        )}
 
         <text transform={`translate(${-50},${PH / 2}) rotate(-90)`} textAnchor="middle" className="sc-axis-title">
           {yLabel}
