@@ -5,11 +5,3 @@
 
 [build.environment]
   NODE_VERSION = "20"
-
-# Preview build: discourage indexing at the header level too, not just the
-# meta tag, so crawlers that ignore HTML still get the signal. Remove this
-# block when the site goes properly live.
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Robots-Tag = "noindex, nofollow"
