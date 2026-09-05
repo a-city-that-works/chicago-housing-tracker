@@ -86,18 +86,6 @@ function trend(points: ScatterPoint[]) {
   return { slope, intercept: my - slope * mx };
 }
 
-/** A sawtooth across the plot — the conventional mark for a discontinuous scale. */
-function zigzag(width: number, y: number, step = 13, amp = 4): string {
-  const d = [`M0,${y}`];
-  let up = true;
-  for (let x = step / 2; x < width; x += step / 2) {
-    d.push(`L${x.toFixed(1)},${(y + (up ? -amp : amp)).toFixed(1)}`);
-    up = !up;
-  }
-  d.push(`L${width},${y}`);
-  return d.join(" ");
-}
-
 interface Placed {
   ward: number;
   text: string;
@@ -229,11 +217,11 @@ export function Scatter({
         <line x1={0} x2={PW} y1={PH} y2={PH} stroke="var(--rule)" strokeWidth={1} />
 
         {clipped && (
-          <g>
-            <path d={zigzag(PW, breakY)} fill="none" stroke="var(--rule)" strokeWidth={1.25} />
-            <text x={PW} y={breakY - 8} textAnchor="end" className="sc-clip-note">
-              scale break
-            </text>
+          // the conventional pair of slashes, on the axis only — the plot area
+          // stays clean, and the off-scale point carries its own figure
+          <g stroke="var(--muted)" strokeWidth={1.25} strokeLinecap="round">
+            <line x1={-5} y1={breakY + 1} x2={5} y2={breakY - 5} />
+            <line x1={-5} y1={breakY + 6} x2={5} y2={breakY} />
           </g>
         )}
 
