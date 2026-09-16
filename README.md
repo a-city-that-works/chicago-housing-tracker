@@ -165,6 +165,10 @@ than committing bad data:
 
 Requires `shapely` and `certifi`, both build-time only.
 
+## What's next
+
+Planned work, in priority order, lives in [BACKLOG.md](BACKLOG.md).
+
 ## Known issues
 
 - `wards_data.json` (~470 KB) is still imported into the bundle. It is small enough not to

@@ -13,6 +13,11 @@ const CHICAGO_CENTER: [number, number] = [41.8501, -87.6877];
 
 interface Props {
   rows: WardPermits[];
+  /**
+   * Draw outlines only. Used when the rows are keyed on historic ward numbers,
+   * which don't correspond to the boundaries being drawn.
+   */
+  unshaded?: boolean;
   selectedWard: number | null;
   hoveredWard: number | null;
   onSelectWard: (w: number | null) => void;
@@ -21,6 +26,7 @@ interface Props {
 
 export function PermitMap({
   rows,
+  unshaded = false,
   selectedWard,
   hoveredWard,
   onSelectWard,
@@ -57,6 +63,14 @@ export function PermitMap({
     const row = byWard.get(w);
     const isSelected = w === selectedWard;
     const isHovered = w === hoveredWard;
+    if (unshaded) {
+      return {
+        fillColor: PERMIT_NO_DATA,
+        fillOpacity: isSelected || isHovered ? 0.55 : 0.25,
+        color: isSelected ? "#0a1014" : "#8a969c",
+        weight: isSelected ? 3 : isHovered ? 2 : 1,
+      };
+    }
     return {
       fillColor: row ? permitColor(row.perYear) : PERMIT_NO_DATA,
       fillOpacity: 1,
@@ -90,7 +104,7 @@ export function PermitMap({
         <TileLayer url={basemapUrl(prefersDark)} attribution={BASEMAP_ATTRIBUTION} />
         {geoData && (
           <GeoJSON
-            key={`${rows.map((r) => r.perYear.toFixed(1)).join(",")}-${selectedWard}-${hoveredWard}`}
+            key={`${unshaded ? "u" : "s"}-${rows.map((r) => r.perYear.toFixed(1)).join(",")}-${selectedWard}-${hoveredWard}`}
             data={geoData}
             style={styleFeature as (f?: Feature) => PathOptions}
             onEachFeature={onEachFeature as (f: Feature, l: Layer) => void}

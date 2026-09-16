@@ -538,3 +538,60 @@
 .pm-method a:hover {
   color: var(--accent-text);
 }
+
+/* Ward-basis toggle */
+
+.pm-basis {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.pm-toggle {
+  display: inline-flex;
+  border: 1px solid var(--rule);
+}
+
+.pm-tog {
+  border: none;
+  background: var(--ground);
+  color: var(--muted);
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border-right: 1px solid var(--rule);
+}
+
+.pm-tog:last-child {
+  border-right: none;
+}
+
+.pm-tog:hover:not(.on) {
+  color: var(--accent-text);
+}
+
+.pm-tog.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+.pm-basis-hint {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.pm-map-note p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 260px;
+}

@@ -7,7 +7,21 @@
  * units PER YEAR, so changing the year range moves the map without moving the
  * scale under it.
  */
-export interface PermitsData {
+/** The per-ward tables, keyed on one definition of "ward". */
+export interface PermitTables {
+  /** ward -> year -> units */
+  units: Record<string, Record<string, number>>;
+  /** ward -> year -> units in 1-unit buildings */
+  sfh: Record<string, Record<string, number>>;
+  /** ward -> year -> units in 2+ unit buildings */
+  mfh: Record<string, Record<string, number>>;
+  /** ward -> year -> permit count */
+  permits: Record<string, Record<string, number>>;
+  /** ward -> notable projects, largest first. */
+  projects: Record<string, Project[]>;
+}
+
+export interface PermitsData extends PermitTables {
   meta: {
     source: string;
     firstYear: number;
@@ -17,18 +31,30 @@ export interface PermitsData {
     unclassifiedShare: number;
     note: string;
   };
-  /** ward -> year -> units */
-  units: Record<string, Record<string, number>>;
-  /** ward -> year -> units in 1-unit buildings */
-  sfh: Record<string, Record<string, number>>;
-  /** ward -> year -> units in 2+ unit buildings */
-  mfh: Record<string, Record<string, number>>;
-  /** ward -> year -> permit count */
-  permits: Record<string, Record<string, number>>;
   /** Smallest project published individually. */
   projectMinUnits: number;
-  /** ward -> notable projects, largest first. */
-  projects: Record<string, Project[]>;
+  /**
+   * The same tables keyed on the ward as stated on each permit — the map in
+   * force when it was issued — rather than on today's boundaries.
+   */
+  atIssue: PermitTables;
+}
+
+/**
+ * Which "ward" a permit is counted under. Boundaries were redrawn in 2015 and
+ * 2023, so the two disagree on roughly a fifth of permits. "current" answers
+ * where the units are on today's map; "atIssue" answers whose ward it was at
+ * the time.
+ */
+export type WardBasis = "current" | "atIssue";
+
+export const WARD_BASIS_LABELS: Record<WardBasis, string> = {
+  current: "Current (2023)",
+  atIssue: "At time of permit",
+};
+
+function tablesFor(data: PermitsData, basis: WardBasis): PermitTables {
+  return basis === "atIssue" ? data.atIssue : data;
 }
 
 export interface Project {
@@ -95,8 +121,10 @@ export function permitColor(perYear: number | null): string {
 export function summarise(
   data: PermitsData,
   from: number,
-  to: number
+  to: number,
+  basis: WardBasis = "current"
 ): { rows: WardPermits[]; years: number; total: number } {
+  const t = tablesFor(data, basis);
   const lastMonth = Number(data.meta.lastDate.slice(5, 7));
   const partial = to === data.meta.lastYear ? lastMonth / 12 : 1;
   const years = Math.max(0.25, to - from + partial);
@@ -111,10 +139,10 @@ export function summarise(
     let permits = 0;
     for (let y = from; y <= to; y++) {
       const ys = String(y);
-      units += data.units[key]?.[ys] ?? 0;
-      sfh += data.sfh[key]?.[ys] ?? 0;
-      mfh += data.mfh[key]?.[ys] ?? 0;
-      permits += data.permits[key]?.[ys] ?? 0;
+      units += t.units[key]?.[ys] ?? 0;
+      sfh += t.sfh[key]?.[ys] ?? 0;
+      mfh += t.mfh[key]?.[ys] ?? 0;
+      permits += t.permits[key]?.[ys] ?? 0;
     }
     total += units;
     rows.push({
@@ -147,9 +175,10 @@ export function wardProjects(
   ward: number,
   from: number,
   to: number,
-  limit = 5
+  limit = 5,
+  basis: WardBasis = "current"
 ): Project[] {
-  const all = data.projects[String(ward)] ?? [];
+  const all = tablesFor(data, basis).projects[String(ward)] ?? [];
   return all
     .filter((p) => {
       const y = Number(p.d.slice(0, 4));
@@ -159,12 +188,20 @@ export function wardProjects(
 }
 
 /** Rows as CSV, for the download button. */
-export function toCsv(rows: WardPermits[], from: number, to: number): string {
-  const head = ["ward", "units", "sfh_units", "mfh_units", "mfh_share", "permits", "units_per_year", "years"];
+export function toCsv(
+  rows: WardPermits[],
+  from: number,
+  to: number,
+  basis: WardBasis = "current"
+): string {
+  const head = [
+    "ward", "ward_basis", "units", "sfh_units", "mfh_units", "mfh_share",
+    "permits", "units_per_year", "years",
+  ];
   const lines = [head.join(",")];
   for (const r of [...rows].sort((a, b) => a.ward - b.ward)) {
     lines.push([
-      r.ward, r.units, r.sfh, r.mfh,
+      r.ward, basis, r.units, r.sfh, r.mfh,
       r.mfhShare == null ? "" : r.mfhShare.toFixed(4),
       r.permits, r.perYear.toFixed(2), `${from}-${to}`,
     ].join(","));

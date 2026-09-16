@@ -7,8 +7,10 @@ import {
   summarise,
   toCsv,
   wardProjects,
+  WARD_BASIS_LABELS,
   yearlyTotals,
   type PermitsData,
+  type WardBasis,
 } from "../lib/permits";
 import raw from "../data/permits.json";
 
@@ -27,12 +29,17 @@ export function Permitting() {
   const [to, setTo] = useState(LAST);
   const [selectedWard, setSelectedWard] = useState<number | null>(null);
   const [hoveredWard, setHoveredWard] = useState<number | null>(null);
+  const [basis, setBasis] = useState<WardBasis>("current");
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({
     key: "units",
     desc: true,
   });
 
-  const { rows, years, total } = useMemo(() => summarise(data, from, to), [from, to]);
+  const { rows, years, total } = useMemo(
+    () => summarise(data, from, to, basis),
+    [from, to, basis]
+  );
+  const atIssue = basis === "atIssue";
   const trend = useMemo(() => yearlyTotals(data), []);
   const maxTrend = Math.max(...trend.map((t) => t.units));
 
@@ -58,11 +65,11 @@ export function Permitting() {
     );
 
   const downloadCsv = () => {
-    const blob = new Blob([toCsv(rows, from, to)], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob([toCsv(rows, from, to, basis)], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `chicago-permits-by-ward-${from}-${to}.csv`;
+    a.download = `chicago-permits-by-ward-${from}-${to}${atIssue ? "-wards-at-issue" : ""}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -179,6 +186,27 @@ export function Permitting() {
           <p className="pm-footnote">
             * Note that {LAST} data is only through {data.meta.lastDate}.
           </p>
+
+          <div className="pm-basis">
+            <span className="eyebrow">Ward boundaries</span>
+            <div className="pm-toggle" role="group" aria-label="Ward boundaries">
+              {(Object.keys(WARD_BASIS_LABELS) as WardBasis[]).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  className={basis === b ? "pm-tog on" : "pm-tog"}
+                  onClick={() => setBasis(b)}
+                >
+                  {WARD_BASIS_LABELS[b]}
+                </button>
+              ))}
+            </div>
+            <p className="pm-basis-hint">
+              {atIssue
+                ? "Counted under the ward as drawn when each permit was issued — what each alder's ward approved at the time."
+                : "Every permit placed on today's map by its coordinates — what has been built in each ward as it exists now."}
+            </p>
+          </div>
         </div>
 
         <div className="pm-summary">
@@ -200,23 +228,35 @@ export function Permitting() {
         <div className="pm-map">
           <PermitMap
             rows={rows}
+            unshaded={atIssue}
             selectedWard={selectedWard}
             hoveredWard={hoveredWard}
             onSelectWard={setSelectedWard}
             onHoverWard={setHoveredWard}
           />
           <div className="pm-overlay">
-            <div className="pm-legend">
-              <span className="pm-legend-title">Units permitted per year</span>
-              <div className="pm-legend-steps">
-                {PERMIT_RAMP.map((c, i) => (
-                  <div key={c} className="pm-legend-step">
-                    <span className="pm-chip" style={{ background: c }} />
-                    <span className="pm-chip-label">{PERMIT_BREAK_LABELS[i]}</span>
-                  </div>
-                ))}
+            {atIssue ? (
+              <div className="pm-legend pm-map-note">
+                <span className="pm-legend-title">Map unshaded in this view</span>
+                <p>
+                  These ward numbers are as drawn when each permit was issued. Boundaries moved
+                  in 2015 and 2023, so they don&rsquo;t line up with the outlines here. The table
+                  carries the figures; the map is for orientation only.
+                </p>
               </div>
-            </div>
+            ) : (
+              <div className="pm-legend">
+                <span className="pm-legend-title">Units permitted per year</span>
+                <div className="pm-legend-steps">
+                  {PERMIT_RAMP.map((c, i) => (
+                    <div key={c} className="pm-legend-step">
+                      <span className="pm-chip" style={{ background: c }} />
+                      <span className="pm-chip-label">{PERMIT_BREAK_LABELS[i]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {activeRow && (
               <div className="pm-card">
                 <div className="pm-card-head">
@@ -240,7 +280,7 @@ export function Permitting() {
                   </div>
                 </div>
                 {(() => {
-                  const projects = wardProjects(data, activeRow.ward, from, to);
+                  const projects = wardProjects(data, activeRow.ward, from, to, 5, basis);
                   return (
                     <div className="pm-projects">
                       <span className="pm-card-label">
@@ -325,9 +365,10 @@ export function Permitting() {
         extracted from each permit&rsquo;s work description, since the source dataset has no
         unit-count field; note that these figures are not exact, as about{" "}
         {Math.round(data.meta.unclassifiedShare * 100)}% of permits could not be classified (and are
-        ignored). Permits staged across several filings for one project are counted once. As ward
-        boundaries were last redrawn in 2023, all permits are assigned to their current wards by
-        coordinates. Source:{" "}
+        ignored). Permits staged across several filings for one project are counted once. Ward
+        boundaries were redrawn in 2015 and 2023: by default every permit is placed on today&rsquo;s
+        map by its coordinates, while the &ldquo;at time of permit&rdquo; view keeps the ward number
+        recorded on the permit itself &mdash; the two differ on about a fifth of permits. Source:{" "}
         <a href={PERMITS_DATASET_URL} target="_blank" rel="noreferrer">
           Chicago Building Permits (ydr8-5enu)
         </a>

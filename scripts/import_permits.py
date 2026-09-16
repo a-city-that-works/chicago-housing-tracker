@@ -24,6 +24,12 @@ Three corrections do most of the work:
    Validated at 99.87% against 2024+ permits, whose stated ward is already
    current.
 
+   The stated ward is kept too, as a second set of tables ("atIssue"). It is
+   the ward as drawn when the permit was issued — agreement with today's map
+   is ~70% for 2010-14 and ~80% for 2015-22, stepping up at each redistricting
+   — so it answers "whose ward was this at the time" rather than "where is
+   this now". The site offers both.
+
 Requires: shapely (build-time only, not a site dependency).
 """
 import collections
@@ -139,6 +145,51 @@ def fetch_permits():
     return rows
 
 
+def stated_ward(r):
+    """Ward as recorded on the permit — the map in force when it was issued."""
+    try:
+        w = int(str(r.get("ward") or "").strip())
+    except ValueError:
+        return None
+    return w if 1 <= w <= 50 else None
+
+
+def aggregate(kept, ward_index):
+    """Per-ward, per-year tables keyed on whichever ward is at `ward_index`."""
+    dd = lambda: collections.defaultdict(lambda: collections.defaultdict(int))
+    units, sfh, mfh, permits = dd(), dd(), dd(), dd()
+    projects = collections.defaultdict(list)
+    for rec in kept:
+        date, n, addr, permit = rec[0], rec[3], rec[4], rec[5]
+        w = rec[ward_index]
+        if w is None:
+            continue
+        y = date[:4]
+        permits[w][y] += 1
+        if n:
+            units[w][y] += n
+            # A permit for exactly one unit is a house; two or more is a
+            # multi-family building. Split on the unit count rather than the
+            # classifier's own label, which also calls some 1-unit buildings
+            # "multi-unit" simply because the count was stated explicitly.
+            if n == 1:
+                sfh[w][y] += n
+            else:
+                mfh[w][y] += n
+            if n >= PROJECT_MIN_UNITS:
+                projects[w].append({"d": date, "u": n, "a": title_case(addr), "p": permit})
+    return {"units": units, "sfh": sfh, "mfh": mfh, "permits": permits, "projects": projects}
+
+
+def tables(agg):
+    """JSON-ready form of aggregate() output."""
+    out = {k: {str(w): dict(agg[k][w]) for w in sorted(agg[k])}
+           for k in ("units", "sfh", "mfh", "permits")}
+    out["projects"] = {str(w): sorted(agg["projects"][w], key=lambda x: -x["u"])
+                       for w in sorted(agg["projects"])}
+    return out
+
+
 def main():
     from shapely.geometry import shape, Point
     from shapely.strtree import STRtree
@@ -182,14 +233,15 @@ def main():
         w = current_ward(r)
         if w is None:
             unmapped += 1
+        sw = stated_ward(r)
         addr = " ".join(str(r.get(f) or "").strip().upper()
                         for f in ("street_number", "street_direction", "street_name"))
-        recs.append((r.get("issue_date", "")[:10], w, n, addr, r.get("permit_")))
+        recs.append((r.get("issue_date", "")[:10], w, sw, n, addr, r.get("permit_")))
 
     # collapse staged permits for one project
     recs.sort(key=lambda x: x[0])
     seen, kept, dropped = {}, [], 0
-    for date, w, n, addr, permit in recs:
+    for date, w, sw, n, addr, permit in recs:
         if n:
             k = (addr, n)
             prev = seen.get(k)
@@ -198,34 +250,18 @@ def main():
                 dropped += 1
                 continue
             seen[k] = date
-        kept.append((date, w, n, addr, permit))
+        kept.append((date, w, sw, n, addr, permit))
 
     print(f"  unmapped to a ward: {unmapped} ({unmapped/len(rows)*100:.2f}%)")
     print(f"  collapsed {dropped} staged duplicates")
     print("  classification: " + ", ".join(f"{k} {v}" for k, v in cats.most_common()))
 
-    by_ward_year = collections.defaultdict(lambda: collections.defaultdict(int))
-    sfh_by_ward_year = collections.defaultdict(lambda: collections.defaultdict(int))
-    mfh_by_ward_year = collections.defaultdict(lambda: collections.defaultdict(int))
-    permits_by_ward_year = collections.defaultdict(lambda: collections.defaultdict(int))
-    projects = collections.defaultdict(list)
-    for date, w, n, addr, permit in kept:
-        if w is None:
-            continue
-        y = date[:4]
-        permits_by_ward_year[w][y] += 1
-        if n:
-            by_ward_year[w][y] += n
-            # A permit for exactly one unit is a house; two or more is a
-            # multi-family building. Split on the unit count rather than the
-            # classifier's own label, which also calls some 1-unit buildings
-            # "multi-unit" simply because the count was stated explicitly.
-            if n == 1:
-                sfh_by_ward_year[w][y] += n
-            else:
-                mfh_by_ward_year[w][y] += n
-            if n >= PROJECT_MIN_UNITS:
-                projects[w].append({"d": date, "u": n, "a": title_case(addr), "p": permit})
+    current = aggregate(kept, ward_index=1)
+    at_issue = aggregate(kept, ward_index=2)
+    by_ward_year = current["units"]
+    moved = sum(1 for rec in kept if rec[1] and rec[2] and rec[1] != rec[2])
+    print(f"  stated ward differs from current ward on {moved:,} of {len(kept):,} "
+          f"permits ({moved / len(kept) * 100:.1f}%)")
 
     last_date = max(rec[0] for rec in kept)
     years = sorted({rec[0][:4] for rec in kept})
@@ -238,17 +274,13 @@ def main():
             "permits": len(rows),
             "unclassifiedShare": round(cats["unclear"] / len(rows), 4),
             "note": ("Gross new construction only — excludes conversions, "
-                     "deconversions and demolitions. Wards are current (2023) "
-                     "boundaries for every year."),
+                     "deconversions and demolitions. Top-level tables key on "
+                     "current (2023) ward boundaries for every year; atIssue "
+                     "keys on the ward as stated on the permit."),
         },
-        "units": {str(w): dict(by_ward_year[w]) for w in sorted(by_ward_year)},
-        "sfh": {str(w): dict(sfh_by_ward_year[w]) for w in sorted(sfh_by_ward_year)},
-        "mfh": {str(w): dict(mfh_by_ward_year[w]) for w in sorted(mfh_by_ward_year)},
-        "permits": {str(w): dict(permits_by_ward_year[w]) for w in sorted(permits_by_ward_year)},
         "projectMinUnits": PROJECT_MIN_UNITS,
-        "projects": {
-            str(w): sorted(projects[w], key=lambda x: -x["u"]) for w in sorted(projects)
-        },
+        **tables(current),
+        "atIssue": tables(at_issue),
     }
     # Guard against an upstream change silently gutting the data. Permits only
     # accumulate, so a materially smaller pull means the API, the permit_type
