@@ -35,22 +35,27 @@ be designed to show the two series separately.
 | DOH ARO project lists (PDF, chicago.gov) | Per project: on-site units vs in-lieu fee, by address | PDF wrangling. No portal dataset for ARO exists. |
 | `p293-wvbd` wards | Point-in-polygon to current wards, same as permits | — |
 
-**Phases.**
+**Phases.** (Flow from the start — see the external request below for why
+the undated directory is not a first version.)
 
-1. **Stock by ward.** Map and table of city-assisted affordable units per ward
-   from `s6ha-ppgi`, split subsidized vs ARO, normalised per 1,000 households
-   (ACS, already in the repo). Add a scatter of each series against units
-   permitted per year 2010–26. Answers the hunch at the stock level. About a
-   day. Ship with the limits above stated on the page.
-2. **Flow.** Date the developments: address-match to new-construction permits
-   for permit year, and join LIHTC placed-in-service years for the subsidized
-   side. Report the match rate honestly — it will not be 100%. Then a year
-   slider like the permitting page. Two to three days; the risk is match rate.
-3. **The ARO mechanism (stretch).** From DOH's project lists, map projects that
+1. **LIHTC.** Pull HUD's database, keep the Chicago subset, place each
+   property in a ward by coordinates, and build units added per ward per year
+   from placed-in-service dates. Proves the pipeline on the cleanest source.
+   Ship the scatter against market-rate permits first and let it show whether
+   the split is real before designing the map around it.
+2. **ARO.** The directory's ARO entries, dated by address match to our
+   new-construction permits. Report the match rate honestly.
+3. **Supportive housing.** Mostly a filter on what is already loaded, dated
+   the same two ways.
+4. **CHA.** Hand-entered from Moving to Work reports, *net* of removals.
+5. **The ARO mechanism (stretch).** From DOH's project lists, map projects that
    paid the in-lieu fee against where fee-funded units were built. This is the
    actual mechanism behind the hunch — high-market wards paying instead of
    building, fees funding units elsewhere — and would be the headline chart.
    Effort unknown until the PDFs are inspected.
+
+The directory (`s6ha-ppgi`) remains useful as a cross-check on coverage and
+as a secondary stock view, normalised per 1,000 households.
 
 **External request, 2026-09-18.** A reader asked for "an additional map/view
 that highlights LIHTC/ARO/CHA units added, and maybe another one for shelters
