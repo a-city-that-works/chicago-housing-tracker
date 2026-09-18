@@ -52,10 +52,43 @@ be designed to show the two series separately.
    building, fees funding units elsewhere — and would be the headline chart.
    Effort unknown until the PDFs are inspected.
 
-**Decide before starting phase 1:** whether "affordable" on the page means the
-dataset's scope (income-restricted units in city-assisted rental developments)
-and say so; whether to show total or restricted units; whether CHA gets its
-own layer later.
+**External request, 2026-09-18.** A reader asked for "an additional map/view
+that highlights LIHTC/ARO/CHA units added, and maybe another one for shelters
+and supportive housing." This is the same pipeline framed by program rather
+than by question, and it resolves two decisions:
+
+- *Flow, not stock.* "Units added" is a flow question. The undated directory
+  is not a first version; it is a cross-check.
+- *CHA is in* — and it is the hardest source. No dataset gives CHA units
+  added by year; CHA's annual Moving to Work reports list deliveries per
+  development and would be hand-entered. **A CHA "added" figure without
+  "removed" misleads:** the Plan for Transformation demolished on the order
+  of 25,000 units and replaced fewer. Show net, or say so prominently.
+
+Design consequence: one tab, *program* as a dimension. Map with program
+filters (LIHTC, ARO, CHA, supportive), the scatter grouped market-linked vs
+subsidized, one table.
+
+**Overlap rule, before any counting.** One building can be LIHTC-financed,
+CHA-owned and supportive housing at once — most Plan for Transformation sites
+are — so summing programs double- or triple-counts. Assign each development
+one primary program by a stated precedence (proposed: CHA > supportive >
+LIHTC > ARO) and note the overlap.
+
+**Shelters are a separate section, not a layer.** Different department
+(DFSS), measured in beds not units, no year-added, and the most contested
+siting question in the city since 2023. Ward-level bed counts only, no
+addresses. **Domestic-violence shelters are never mapped** — locations are
+confidential for safety. Scope this separately, last.
+
+**Sequence:** LIHTC (best data; proves the pipeline) → ARO → supportive (a
+filter on data already loaded) → CHA (after the net-vs-gross decision) →
+shelters, if at all.
+
+**Decide before starting:** whether the directory's `units` is restricted
+units or the whole building for mixed-income developments; normalisation
+(raw, per 1,000 households, or affordable as a share of all units permitted
+in the ward — the last is the most quotable).
 
 ## 2. Deconversions and demolitions
 
