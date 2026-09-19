@@ -30,7 +30,23 @@ Three corrections do most of the work:
    new construction are fetched too. Genuine conversions are NOT included —
    this remains a gross new-construction count — and are a separate question.
 
-4. WARD BOUNDARIES MOVED. Wards were redrawn in 2015 and 2023, so a 2012 permit
+4. CONVERSIONS ARE A SEPARATE SERIES. An existing building becoming housing
+   adds real supply but is not new construction, so it is counted apart rather
+   than folded in. Only permits whose text states the change explicitly are
+   read: a before-and-after pair ("convert 5 D.U. to 6 D.U."), an explicit
+   addition ("to provide 320 new apartments"), or a non-residential building
+   converting to N units. Deconversions are the same machinery with the sign
+   flipped, so losses come free.
+
+   These are FLOORS. A conversion that never states a count is invisible here,
+   and demolition losses are not counted at all.
+
+   Order matters: test for deconversion wording first, or "deconversion of 3
+   dwelling units to original 2" reads as +3. A permit whose RESULT is a hotel
+   is not housing. And where a permit states a prior count and says "to create
+   N" without "add" or "new", N is the total, not the increment.
+
+5. WARD BOUNDARIES MOVED. Wards were redrawn in 2015 and 2023, so a 2012 permit
    carries a ward number that is not today's geography. Every permit is
    reassigned to its current ward by point-in-polygon on its coordinates.
    Validated at 99.87% against 2024+ permits, whose stated ward is already
@@ -87,6 +103,80 @@ WORD = re.compile(r"\b(" + "|".join(WORDNUM) + r")\s*[- ]?\s*(?:DWELLING\s+)?" +
 # word because "APARTMENT BUILDING" alone is not a count, so it gets its own
 # pattern requiring a preceding number.
 APARTMENTS = re.compile(r"\b(\d{1,4})\s+(?:NEW\s+)?(?:RESIDENTIAL\s+)?APARTMENTS?\b")
+
+# ---- conversions -------------------------------------------------------
+
+_U = r"(?:D\.?\s?U\.?S?|DWELLING\s+UNITS?|UNITS?|APARTMENTS?)"
+_N = r"\(?(\d{1,4})\)?"
+#: "convert 5 D.U. to 6 D.U." — the only unambiguous form, gain or loss
+BEFORE_AFTER = re.compile(
+    rf"(?:FROM|CONVERT\w*|DECONVERT\w*)\s+(?:EXISTING\s+|EXSTG\s+)?{_N}\s*{_U}"
+    rf"[^.]{{0,50}}?\b(?:TO|INTO)\s+(?:A\s+)?{_N}\s*{_U}")
+DECONVERSION = re.compile(r"\bDECONVER")
+#: "...3 dwelling units to a single family residence"
+TO_SINGLE = re.compile(
+    rf"(?:CONVERT\w*|DECONVERT\w*|FROM)[^.]{{0,60}}?{_N}\s*{_U}"
+    rf"[^.]{{0,40}}?\b(?:TO|INTO)\s+(?:A\s+)?(?:ONE|1|SINGLE)\b")
+ADDS = re.compile(rf"(?:\bADD|ADDITION OF|TO PROVIDE|TO CREATE|RESULTING IN)\s+{_N}"
+                  rf"\s*(?:NEW\s+)?(?:RESIDENTIAL\s+)?{_U}")
+#: distinguishes "add N" (an increment) from "to create N" (possibly a total)
+ADD_VERB = re.compile(r"\b(?:ADD|ADDITION OF|ADDING)\b")
+ADDS_NEW = re.compile(rf"(?:TO PROVIDE|TO CREATE|RESULTING IN)\s+{_N}\s*NEW\s")
+PRIOR_COUNT = re.compile(rf"EXISTING\s+{_N}\s*{_U}|{_N}\s+EXISTING\s*{_U}")
+#: a building that was not housing before, so its whole unit count is new
+NONRES_SOURCE = re.compile(
+    r"\b(OFFICE|WAREHOUSE|FACTORY|SCHOOL|CHURCH|HOTEL|MOTEL|NURSING HOME|HOSPITAL|"
+    r"COMMERCIAL|INDUSTRIAL|RETAIL|BANK|THEATER|THEATRE|YMCA|CONVENT|RECTORY|"
+    r"MANUFACTURING|STORAGE|FUNERAL|CLUB)\b")
+#: hotel rooms are not dwelling units, so a hotel as the RESULT is not housing
+HOTEL_RESULT = re.compile(r"(?:INTO|TO)\s+(?:A\s+)?(?:NEW\s+)?(?:BOUTIQUE\s+)?(?:HOTEL|MOTEL|HOSTEL)")
+CONVERTS_TO = re.compile(rf"CONVER\w+[^.]{{0,120}}?{_N}[- ]?{_U}")
+
+
+def net_conversion(desc):
+    """
+    Net dwelling units created (+) or lost (-) by converting an existing
+    building, or None where the permit does not say plainly enough to tell.
+    """
+    t = (desc or "").upper()
+    if REVISION.search(t):
+        return None
+
+    m = BEFORE_AFTER.search(t)
+    if m:
+        a, b = int(m.group(1)), int(m.group(2))
+        if 0 < a <= 500 and 0 < b <= 500:
+            return b - a
+
+    # deconversion wording must be handled before any gain pattern, or
+    # "deconversion of 3 dwelling units to original 2" scores +3
+    decon = DECONVERSION.search(t)
+    m = TO_SINGLE.search(t)
+    if m and (decon or SFR.search(t)):
+        a = int(m.group(1))
+        if 1 < a <= 20:
+            return 1 - a
+    if decon:
+        return None
+
+    m = ADDS.search(t)
+    if m:
+        n = int(m.group(1))
+        if 0 < n <= 500:
+            prior = PRIOR_COUNT.search(t)
+            if prior and not ADD_VERB.search(t) and not ADDS_NEW.search(t):
+                # "to create N" alongside an existing count means N is the total
+                p = int(prior.group(1) or prior.group(2))
+                return n - p if 0 < p <= 500 else None
+            return n
+
+    if NONRES_SOURCE.search(t) and not EXISTING.search(t) and not HOTEL_RESULT.search(t):
+        m = CONVERTS_TO.search(t)
+        if m:
+            n = int(m.group(1))
+            if 0 < n <= 2000:
+                return n
+    return None
 
 
 def extract_units(t):
@@ -153,7 +243,7 @@ def fetch_permits():
         return json.load(open(CACHE))
     print("  fetching permits from the Chicago open data API…")
     rows = get(API, {
-        "$select": ("permit_,issue_date,ward,reported_cost,work_description,"
+        "$select": ("permit_,permit_type,issue_date,ward,reported_cost,work_description,"
                     "street_number,street_direction,street_name,latitude,longitude"),
         "$where": (
             f"issue_date>='{START_YEAR}-01-01' AND ("
@@ -163,8 +253,14 @@ def fetch_permits():
             "upper(work_description) like '%NEW CONSTRUCTION%' OR "
             "upper(work_description) like '%PROPOSED NEW%' OR "
             "upper(work_description) like '%ERECT NEW%' OR "
-            "upper(work_description) like '%CONSTRUCTION OF A NEW%')))"),
-        "$limit": 60000,
+            "upper(work_description) like '%CONSTRUCTION OF A NEW%' OR "
+            # conversions and deconversions of existing buildings
+            "upper(work_description) like '%DWELLING%' OR "
+            "upper(work_description) like '%D.U.%' OR "
+            "upper(work_description) like '% UNIT%' OR "
+            "upper(work_description) like '%APARTMENT%' OR "
+            "upper(work_description) like '%RESIDENTIAL%')))"),
+        "$limit": 120000,
         "$order": "issue_date",
     })
     json.dump(rows, open(CACHE, "w"))
@@ -221,7 +317,7 @@ def main():
     from shapely.strtree import STRtree
 
     rows = fetch_permits()
-    print(f"  {len(rows):,} new-construction permits since {START_YEAR}")
+    print(f"  {len(rows):,} permits fetched since {START_YEAR}")
 
     geo = get(WARDS, {"$limit": 60})
     polys = [shape(f["geometry"]) for f in geo["features"]]
@@ -252,8 +348,23 @@ def main():
     if rate < 99:
         print("  WARNING: agreement below 99% — check the boundary file", file=sys.stderr)
 
+    # A permit is new construction if it is typed that way, or if its text
+    # describes a new building despite a renovation type. Everything else that
+    # reached the fetch is a conversion candidate.
+    NEWISH = re.compile(r"NEW CONSTRUCTION|PROPOSED NEW|ERECT NEW|CONSTRUCTION OF A NEW")
+
+    def is_new_build(r):
+        if (r.get("permit_type") or "") == "PERMIT - NEW CONSTRUCTION":
+            return True
+        return bool(NEWISH.search((r.get("work_description") or "").upper()))
+
+    newbuild = [r for r in rows if is_new_build(r)]
+    convrows = [r for r in rows if not is_new_build(r)]
+    print(f"  {len(newbuild):,} new-construction permits, "
+          f"{len(convrows):,} conversion candidates")
+
     recs, unmapped, cats = [], 0, collections.Counter()
-    for r in rows:
+    for r in newbuild:
         cat, n = classify(r.get("work_description"))
         cats[cat] += 1
         w = current_ward(r)
@@ -289,6 +400,39 @@ def main():
     print(f"  stated ward differs from current ward on {moved:,} of {len(kept):,} "
           f"permits ({moved / len(kept) * 100:.1f}%)")
 
+    # ---- conversions, kept as their own series ---------------------------
+    crecs = []
+    for r in convrows:
+        n = net_conversion(r.get("work_description"))
+        if not n:
+            continue
+        a = " ".join(str(r.get(f) or "").strip().upper()
+                     for f in ("street_number", "street_direction", "street_name"))
+        crecs.append((r.get("issue_date", "")[:10], current_ward(r), n, a))
+    crecs.sort(key=lambda x: x[0])
+    cseen, ckept = {}, 0
+    gained = collections.defaultdict(lambda: collections.defaultdict(int))
+    lost = collections.defaultdict(lambda: collections.defaultdict(int))
+    for date, w, n, a in crecs:
+        k = (a, n)
+        prev = cseen.get(k)
+        if prev and (datetime.date.fromisoformat(date)
+                     - datetime.date.fromisoformat(prev)).days <= 730:
+            continue
+        cseen[k] = date
+        if w is None:
+            continue
+        ckept += 1
+        y = date[:4]
+        if n > 0:
+            gained[w][y] += n
+        else:
+            lost[w][y] += -n
+    tg = sum(sum(v.values()) for v in gained.values())
+    tl = sum(sum(v.values()) for v in lost.values())
+    print(f"  conversions: {ckept:,} permits, +{tg:,} units gained, "
+          f"-{tl:,} lost, net {tg - tl:+,}")
+
     last_date = max(rec[0] for rec in kept)
     years = sorted({rec[0][:4] for rec in kept})
     payload = {
@@ -298,14 +442,22 @@ def main():
             "firstYear": int(years[0]),
             "lastYear": int(years[-1]),
             "lastDate": last_date,
-            "permits": len(rows),
-            "unclassifiedShare": round(cats["unclear"] / len(rows), 4),
+            "permits": len(newbuild),
+            "unclassifiedShare": round(cats["unclear"] / len(newbuild), 4),
             "note": ("Gross new construction only — excludes conversions, "
                      "deconversions and demolitions. Top-level tables key on "
                      "current (2023) ward boundaries for every year; atIssue "
                      "keys on the ward as stated on the permit."),
         },
         "projectMinUnits": PROJECT_MIN_UNITS,
+        "conversions": {
+            "note": ("Net dwelling units created or lost by converting existing "
+                     "buildings, where the permit says so plainly. A floor, not a "
+                     "total: conversions that state no unit count are invisible, "
+                     "and demolitions are not counted here."),
+            "gained": {str(w): dict(gained[w]) for w in sorted(gained)},
+            "lost": {str(w): dict(lost[w]) for w in sorted(lost)},
+        },
         **tables(current),
         "atIssue": tables(at_issue),
     }
@@ -319,7 +471,7 @@ def main():
             new_units = sum(sum(v.values()) for v in by_ward_year.values())
             prev_permits = prev.get("meta", {}).get("permits", 0)
             for label, old, new in (("units", prev_units, new_units),
-                                    ("permits", prev_permits, len(rows))):
+                                    ("permits", prev_permits, len(newbuild))):
                 if old and new < old * 0.9:
                     print(f"  REFUSING TO WRITE: {label} fell from {old:,} to {new:,} "
                           f"({new / old * 100:.0f}% of previous). Check the upstream dataset.",

@@ -44,12 +44,10 @@ Two corrections do the work:
    renovation, larger building over smaller, earlier permit over later. A
    permit can only date one ARO building.
 
-   BOTH PERMIT FILES ARE NEEDED. Many ARO buildings are conversions — the
-   Duncan is a converted YMCA — and never pull a new-construction permit. Some
-   genuinely new buildings are filed as renovations too: the Thompson's full
-   building permit for a "PROPOSED NEW 12 STORY RESIDENTIAL" tower is typed
-   RENOVATION/ALTERATION. So renovation permits are fetched as well, and are
-   required to state a unit count, which is the only thing separating a
+   CONVERSIONS COUNT. Many ARO buildings are adaptive reuse — the Duncan is a
+   converted YMCA — and never pull a new-construction permit, so the permit
+   importer's pool (which now covers renovations too) is used whole. Renovation
+   permits must state a unit count, which is the only thing separating a
    conversion from a kitchen remodel.
 
    The gate costs coverage and is worth it. A wrong year is worse than no
@@ -87,12 +85,7 @@ ARO_MAP_PAGE = (
     "https://www.chicago.gov/city/en/sites/affordable-requirements-ordinance/home/aro-map.html"
 )
 WARDS = "https://data.cityofchicago.org/resource/p293-wvbd.geojson"
-PERMITS_API = "https://data.cityofchicago.org/resource/ydr8-5enu.json"
 PERMIT_CACHE = ".permits_cache.json"
-# Conversions never pull a new-construction permit, so the renovation file is
-# fetched too. Kept separate from the permitting page's cache, which is
-# deliberately new-construction only.
-RENO_CACHE = ".aro_reno_cache.json"
 OUT = "src/data/aro.json"
 
 # Last-resort match radius. 40 m dates only 74% of buildings; 150 m starts
@@ -182,28 +175,6 @@ def get(url, params=None, timeout=120):
         return json.load(r)
 
 
-def fetch_renovations():
-    """Renovation permits that mention housing — where conversions live."""
-    if os.path.exists(RENO_CACHE):
-        print(f"  using cached {RENO_CACHE}")
-        return json.load(open(RENO_CACHE))
-    print("  fetching renovation permits…")
-    where = ("permit_type='PERMIT - RENOVATION/ALTERATION' AND issue_date>='2010-01-01' "
-             "AND latitude IS NOT NULL AND ("
-             "upper(work_description) like '%DWELLING%' OR "
-             "upper(work_description) like '%D.U.%' OR "
-             "upper(work_description) like '% UNIT%' OR "
-             "upper(work_description) like '%APARTMENT%' OR "
-             "upper(work_description) like '%RESIDENTIAL%')")
-    rows = get(PERMITS_API, {
-        "$select": ("permit_,issue_date,work_description,street_number,"
-                    "street_direction,street_name,latitude,longitude"),
-        "$where": where, "$limit": 60000, "$order": "issue_date",
-    })
-    json.dump(rows, open(RENO_CACHE, "w"))
-    return rows
-
-
 def fetch_aro():
     fields = ",".join(
         ["Name", "Project_Ad", "Match_addr", "Community", "Ward", "ARO_Units", "Off_site_P"]
@@ -260,18 +231,29 @@ def main():
         print(f"  ERROR: {PERMIT_CACHE} not found — run scripts/import_permits.py first.",
               file=sys.stderr)
         sys.exit(1)
-    newbuild = [p for p in json.load(open(PERMIT_CACHE)) if p.get("latitude")]
-    renos = [p for p in fetch_renovations() if p.get("latitude")]
-    print(f"  permit pool: {len(newbuild):,} new construction + {len(renos):,} renovation")
+    # One pool: the permit importer now fetches new construction and renovation
+    # together. Whether a permit built or converted is a property of the permit,
+    # not of which file it came from.
+    NEWISH = re.compile(r"NEW CONSTRUCTION|PROPOSED NEW|ERECT NEW|CONSTRUCTION OF A NEW")
 
+    def kind_of(p):
+        if (p.get("permit_type") or "") == "PERMIT - NEW CONSTRUCTION":
+            return "new"
+        return "new" if NEWISH.search((p.get("work_description") or "").upper()) else "conversion"
+
+    permits = [p for p in json.load(open(PERMIT_CACHE)) if p.get("latitude")]
     by_street = collections.defaultdict(list)
-    for kind, pool in (("new", newbuild), ("conversion", renos)):
-        for p in pool:
-            k = street_key((p.get("street_number") or "").strip(),
-                           f"{(p.get('street_direction') or '').strip()} "
-                           f"{(p.get('street_name') or '').strip()}")
-            if k:
-                by_street[k[1]].append((k[0], p, kind))
+    kinds_seen = collections.Counter()
+    for p in permits:
+        kind = kind_of(p)
+        kinds_seen[kind] += 1
+        k = street_key((p.get("street_number") or "").strip(),
+                       f"{(p.get('street_direction') or '').strip()} "
+                       f"{(p.get('street_name') or '').strip()}")
+        if k:
+            by_street[k[1]].append((k[0], p, kind))
+    print(f"  permit pool: {kinds_seen['new']:,} new construction + "
+          f"{kinds_seen['conversion']:,} renovation")
 
     claimed = set()
 
