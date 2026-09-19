@@ -90,6 +90,10 @@ NONRES = re.compile(
     r"\bPARKING LOT\b|\bFOUNDATION ONLY\b|\bPILES ONLY\b|\bSWIMMING POOL\b|"
     r"\bTOWER\b|\bGREENHOUSE\b|\bPARK\b")
 REVISION = re.compile(r"\bREVISION\b|\bREVISE[SD]?\b|\bAMEND")
+#: "[ALSO SEE REVISION PERMIT #100862148]" points at a different permit; it does
+#: not make this one a revision. Dropped 41 real buildings totalling 1,806 units,
+#: including a 499-unit tower, until this was stripped before the test.
+CROSS_REF = re.compile(r"[\[(]?\s*(?:ALSO\s+)?SEE\s+(?:REVISION|PERMIT|APPLICATION)[^.\])]*[\])]?")
 SFR = re.compile(r"SINGLE\s*-?\s*FAMILY|\bSFR\b")
 EXISTING = re.compile(r"EXISTING[^.]{0,60}?\b(?:UNITS?|D\.?U\.?)\b")
 TAIL = r"(?:UNITS?|D\.\s?U\.?|DU)\b"
@@ -216,7 +220,7 @@ def title_case(addr):
 
 
 def classify(desc):
-    t = (desc or "").upper()
+    t = CROSS_REF.sub(" ", (desc or "").upper())
     if REVISION.search(t):
         return ("revision", None)
     if not EXISTING.search(t):

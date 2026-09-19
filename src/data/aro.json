@@ -6,15 +6,15 @@
   "vintage": "2026-02-06",
   "buildings": 206,
   "units": 2159,
-  "datedUnits": 1995,
-  "datedShare": 0.924,
+  "datedUnits": 2022,
+  "datedShare": 0.9365,
   "undatedBuildings": 25,
   "addrTolerance": 25,
-  "unitsNewBuild": 1688,
-  "unitsConversion": 307,
+  "unitsNewBuild": 1748,
+  "unitsConversion": 274,
   "matchMethods": {
-   "exact": 140,
-   "address": 41,
+   "exact": 139,
+   "address": 42,
    "none": 25
   },
   "note": "Rental ARO units only. Excludes for-sale ARO units and units bought out through in-lieu fees. Years are the issue year of the nearest new-construction permit, not a field in the source. Buildings are matched to that permit by address only, and every candidate must plausibly be a residential building large enough to contain the ARO units."
@@ -32,7 +32,7 @@
   "1": {
    "units": 183,
    "buildings": 24,
-   "dated": 23,
+   "dated": 22,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -71,7 +71,7 @@
   "4": {
    "units": 76,
    "buildings": 6,
-   "dated": 6,
+   "dated": 5,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 1,
@@ -97,7 +97,7 @@
   "25": {
    "units": 20,
    "buildings": 4,
-   "dated": 4,
+   "dated": 3,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -110,7 +110,7 @@
   "26": {
    "units": 14,
    "buildings": 4,
-   "dated": 3,
+   "dated": 4,
    "offSite": 3,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -136,7 +136,7 @@
   "28": {
    "units": 72,
    "buildings": 7,
-   "dated": 1,
+   "dated": 2,
    "offSite": 4,
    "ARO_30": 0,
    "ARO_40": 3,
@@ -344,7 +344,7 @@
   "46": {
    "units": 86,
    "buildings": 15,
-   "dated": 14,
+   "dated": 15,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -410,29 +410,28 @@
  "byYear": {
   "2011": 3,
   "2012": 10,
-  "2013": 27,
-  "2014": 93,
+  "2013": 22,
+  "2014": 91,
   "2015": 56,
-  "2016": 55,
-  "2017": 281,
-  "2018": 232,
-  "2019": 282,
-  "2020": 164,
-  "2021": 106,
-  "2022": 426,
-  "2023": 126,
-  "2024": 117,
-  "2025": 11,
-  "2026": 6
+  "2016": 37,
+  "2017": 308,
+  "2018": 255,
+  "2019": 273,
+  "2020": 192,
+  "2021": 98,
+  "2022": 428,
+  "2023": 124,
+  "2024": 114,
+  "2025": 8,
+  "2026": 3
  },
  "byWardYear": {
   "1": {
    "2012": 10,
    "2013": 2,
-   "2014": 2,
    "2015": 48,
-   "2016": 27,
-   "2017": 32,
+   "2016": 1,
+   "2017": 58,
    "2018": 16,
    "2019": 22,
    "2024": 12,
@@ -453,35 +452,33 @@
    "2014": 63,
    "2018": 1,
    "2019": 2,
-   "2024": 7,
-   "2026": 3
+   "2024": 7
   },
   "5": {
    "2014": 1
   },
   "25": {
    "2016": 10,
-   "2019": 8,
-   "2023": 2
+   "2019": 8
   },
   "26": {
-   "2016": 3,
-   "2017": 3,
+   "2016": 11,
    "2024": 3
   },
   "27": {
    "2014": 24,
    "2016": 8,
    "2017": 111,
-   "2018": 43,
-   "2019": 110,
+   "2018": 49,
+   "2019": 96,
    "2020": 103,
    "2021": 56,
-   "2022": 333,
+   "2022": 341,
    "2023": 74,
    "2024": 66
   },
   "28": {
+   "2020": 28,
    "2024": 10
   },
   "29": {
@@ -492,7 +489,7 @@
   },
   "30": {
    "2020": 2,
-   "2024": 3
+   "2022": 3
   },
   "31": {
    "2014": 3,
@@ -548,13 +545,12 @@
    "2024": 4
   },
   "44": {
-   "2013": 5,
    "2015": 2,
+   "2017": 3,
    "2018": 1,
-   "2019": 2,
+   "2019": 7,
    "2020": 19,
    "2021": 2,
-   "2025": 3,
    "2026": 3
   },
   "45": {
@@ -564,7 +560,7 @@
    "2022": 6
   },
   "46": {
-   "2017": 24,
+   "2017": 25,
    "2018": 7,
    "2020": 16,
    "2021": 13,
@@ -583,8 +579,7 @@
   },
   "48": {
    "2017": 4,
-   "2021": 8,
-   "2022": 9,
+   "2018": 17,
    "2025": 3
   },
   "49": {
@@ -600,9 +595,9 @@
     "n": "Wicker Park Connection",
     "a": "1640 W. Division St.",
     "u": 26,
-    "y": "2016",
+    "y": "2017",
     "m": "exact",
-    "k": "conversion"
+    "k": "new"
    },
    {
     "n": "MiCA",
@@ -744,9 +739,9 @@
     "n": "Wicker Park Place",
     "a": "1504 W. Haddon Ave.",
     "u": 2,
-    "y": "2014",
-    "m": "address",
-    "k": "new"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "1645 W. LeMoyne",
@@ -894,9 +889,9 @@
     "n": "4601 S Ellis Ave",
     "a": "4601 S Ellis Ave",
     "u": 3,
-    "y": "2026",
-    "m": "address",
-    "k": "conversion"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "5228 S Blackstone LLC",
@@ -946,9 +941,9 @@
     "n": "2719 W Cermak",
     "a": "2719 W Cermak Road",
     "u": 2,
-    "y": "2023",
-    "m": "address",
-    "k": "conversion"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "Blue Island",
@@ -964,9 +959,9 @@
     "n": "1623 N. Talman Ave",
     "a": "1623 N. Talman Ave",
     "u": 5,
-    "y": null,
-    "m": "none",
-    "k": null
+    "y": "2016",
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Vista on the Park",
@@ -980,9 +975,9 @@
     "n": "1447 N. Washtenaw Ave",
     "a": "1447 N. Washtenaw Ave",
     "u": 3,
-    "y": "2017",
+    "y": "2016",
     "m": "address",
-    "k": "conversion"
+    "k": "new"
    },
    {
     "n": "1955 Richmond Place",
@@ -1174,9 +1169,9 @@
     "n": "2329 W. Monroe St.",
     "a": "2329 W. Monroe St.",
     "u": 8,
-    "y": "2019",
-    "m": "exact",
-    "k": "conversion"
+    "y": "2022",
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "3803 W Ohio St",
@@ -1198,8 +1193,8 @@
     "n": "2824 W Van Buren",
     "a": "2824 W. Van Buren St.",
     "u": 6,
-    "y": "2019",
-    "m": "exact",
+    "y": "2018",
+    "m": "address",
     "k": "new"
    },
    {
@@ -1296,9 +1291,9 @@
     "n": "Atrio",
     "a": "1922 W. Ogden Ave",
     "u": 28,
-    "y": null,
-    "m": "none",
-    "k": null
+    "y": "2020",
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "District Haus",
@@ -1388,7 +1383,7 @@
     "n": "5416-24 W Belmont Ave",
     "a": "5416-24 W Belmont Ave",
     "u": 3,
-    "y": "2024",
+    "y": "2022",
     "m": "exact",
     "k": "conversion"
    },
@@ -1607,8 +1602,8 @@
     "a": "2312 W Ohio",
     "u": 6,
     "y": "2022",
-    "m": "exact",
-    "k": "conversion"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Luxe on Chicago",
@@ -1796,9 +1791,9 @@
     "n": "The Grace Apartments",
     "a": "3757 N Sheffield Ave",
     "u": 5,
-    "y": "2013",
+    "y": "2019",
     "m": "address",
-    "k": "conversion"
+    "k": "new"
    },
    {
     "n": "3204 N Clifton",
@@ -1812,9 +1807,9 @@
     "n": "The Bel",
     "a": "941 W. Belmont Ave",
     "u": 3,
-    "y": "2025",
-    "m": "address",
-    "k": "new"
+    "y": "2017",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Patterson Green LLC",
@@ -2016,9 +2011,9 @@
     "n": "4420 N. Sheridan Apts.",
     "a": "4420 N. Sheridan Road",
     "u": 1,
-    "y": null,
-    "m": "none",
-    "k": null
+    "y": "2017",
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "927 W. Irving",
@@ -2244,17 +2239,17 @@
     "n": "The Sally",
     "a": "1131 W. Winona St.",
     "u": 9,
-    "y": "2022",
+    "y": "2018",
     "m": "exact",
-    "k": "new"
+    "k": "conversion"
    },
    {
     "n": "The Sally",
     "a": "1135 W. Winona St.",
     "u": 8,
-    "y": "2021",
+    "y": "2018",
     "m": "exact",
-    "k": "new"
+    "k": "conversion"
    },
    {
     "n": "The Synagogue",

@@ -16,9 +16,10 @@ Two corrections do the work:
    year dates it. Three tiers, most trustworthy first:
 
      exact    the geocoder's normalised address equals the permit's
-     address  same street, house number within ±25 (Chicago numbers run 100
-              to the block, so this stays on the block face; it catches corner
-              lots and buildings permitted under one of several addresses)
+     address  same street and same side of it, house number within ±25
+              (Chicago numbers run 100 to the block, so this stays on the block
+              face; odd and even face each other, so a near miss of the wrong
+              parity is a different building)
 
    Proximity matching was tried and dropped: reviewed by hand, roughly half its
    matches were wrong, including two ARO buildings claiming the same permit.
@@ -133,7 +134,7 @@ def plausible(permit, need, classifier, require_count=False):
     `require_count` is used for renovation permits, where an explicit unit
     count is the only thing separating a conversion from a kitchen remodel.
     """
-    t = (permit.get("work_description") or "").upper()
+    t = classifier.CROSS_REF.sub(" ", (permit.get("work_description") or "").upper())
     if NOT_A_BUILDING.search(t) or classifier.REVISION.search(t):
         return None
     # The ARO applies to developments of ten or more units, so a single-family
@@ -154,6 +155,63 @@ def street_key(number, rest):
         return None
     toks = re.sub(r"[.,]", " ", str(rest).upper()).split()
     return int(number), " ".join(SUFFIXES.get(t, t) for t in toks)
+
+
+#: Suffixes the off-site field routinely omits — "2635 W North" is North Ave.
+STREET_TYPES = {"AVE", "ST", "BLVD", "DR", "PL", "RD", "CT", "TER", "PKWY",
+                "PLZ", "SQ", "LN", "WAY", "HWY"}
+
+
+def street_core(street):
+    """Street without its type, so 'W NORTH' and 'W NORTH AVE' meet."""
+    toks = street.split()
+    return " ".join(toks[:-1]) if len(toks) > 1 and toks[-1] in STREET_TYPES else street
+
+
+def parse_address(text):
+    """'344 S Canal' -> street_key, or None."""
+    m = re.match(r"^\s*(\d+)\s+(.+)$", (text or "").strip())
+    return street_key(m.group(1), m.group(2)) if m else None
+
+
+#: "1257-1301 N Ashland Ave" — the geocoder keeps one end of the range
+ADDRESS_RANGE = re.compile(r"^\s*(\d+)\s*[-\u2013]\s*(\d+)")
+
+
+def candidate_anchors(rec):
+    """
+    Addresses the building's permit might be filed under, best first.
+
+    Three things the geocoded address alone gets wrong:
+
+    - OFF-SITE UNITS. 19 records put their ARO units at a different address
+      entirely and say where: Elm Street Plaza is a Dearborn project whose 34
+      units sit at 344 S Canal. Matching the project address dates the wrong
+      building, or none.
+    - ADDRESS RANGES. 17 records give a range and the geocoder keeps one end,
+      which may not be the end the permit used.
+    - Both, for a handful.
+    """
+    out = []
+    if (rec.get("Off_site_P") or "").strip().lower() == "yes":
+        k = parse_address(rec.get("If_off_sit"))
+        if k:
+            out.append(k)
+    head = (rec.get("Match_addr") or "").split(",")[0].strip()
+    geo = parse_address(head)
+    if geo:
+        out.append(geo)
+        m = ADDRESS_RANGE.match((rec.get("Project_Ad") or "").strip())
+        if m:
+            for n in (int(m.group(1)), int(m.group(2))):
+                if n != geo[0]:
+                    out.append((n, geo[1]))
+    seen, uniq = set(), []
+    for k in out:
+        if k not in seen:
+            seen.add(k)
+            uniq.append(k)
+    return uniq
 
 AMI_TIERS = ["ARO_30", "ARO_40", "ARO_50", "ARO_60", "ARO_70", "ARO_80", "ARO_100"]
 
@@ -177,7 +235,8 @@ def get(url, params=None, timeout=120):
 
 def fetch_aro():
     fields = ",".join(
-        ["Name", "Project_Ad", "Match_addr", "Community", "Ward", "ARO_Units", "Off_site_P"]
+        ["Name", "Project_Ad", "Match_addr", "Community", "Ward", "ARO_Units",
+         "Off_site_P", "If_off_sit"]
         + AMI_TIERS
     )
     d = get(ARO_SERVICE + "/query", {
@@ -252,41 +311,50 @@ def main():
                        f"{(p.get('street_name') or '').strip()}")
         if k:
             by_street[k[1]].append((k[0], p, kind))
+            core = street_core(k[1])
+            if core != k[1]:
+                by_street[core].append((k[0], p, kind))
     print(f"  permit pool: {kinds_seen['new']:,} new construction + "
           f"{kinds_seen['conversion']:,} renovation")
 
     claimed = set()
 
-    def match_by_address(match_addr, need):
+    def match_by_address(rec, need):
         """
-        Best plausible permit on the address: exact address first, then the
-        larger building, then the earlier permit. New construction outranks a
-        renovation at the same address, since a conversion permit on a new
-        building is a later fit-out.
+        Best plausible permit across every address this building might be filed
+        under: exact number first, then the larger building, then the earlier
+        permit. New construction outranks a renovation at the same address,
+        since a conversion permit on a new building is a later fit-out.
         """
-        head = (match_addr or "").split(",")[0].strip()
-        m = re.match(r"^(\d+)\s+(.*)$", head)
-        if not m:
-            return None
-        key = street_key(m.group(1), m.group(2))
-        if key is None:
-            return None
-        num, street = key
+        offsite = (rec.get("Off_site_P") or "").strip().lower() == "yes"
         best = None
-        for n, p, kind in by_street.get(street, []):
-            gap = abs(n - num)
-            if gap > ADDR_TOLERANCE or p["permit_"] in claimed:
-                continue
-            units = plausible(p, need, cls, require_count=(kind == "conversion"))
-            if units is None:
-                continue
-            rank = (0 if gap == 0 else 1, 0 if kind == "new" else 1,
-                    -units, p["issue_date"])
-            if best is None or rank < best[0]:
-                best = (rank, p, gap, kind)
+        for anchor_i, (num, street) in enumerate(candidate_anchors(rec)):
+            # the first anchor of an off-site record is the receiving building,
+            # which legitimately holds units owed by several projects
+            shared = offsite and anchor_i == 0
+            pool = by_street.get(street) or by_street.get(street_core(street), [])
+            for n, p, kind in pool:
+                gap = abs(n - num)
+                if gap > ADDR_TOLERANCE:
+                    continue
+                if p["permit_"] in claimed and not shared:
+                    continue
+                # Chicago's odd and even numbers face each other across the
+                # street, so a near miss of the wrong parity is a different
+                # building, not the same one.
+                if gap and (n % 2) != (num % 2):
+                    continue
+                units = plausible(p, need, cls, require_count=(kind == "conversion"))
+                if units is None:
+                    continue
+                rank = (anchor_i, 0 if gap == 0 else 1, 0 if kind == "new" else 1,
+                        -units, p["issue_date"])
+                if best is None or rank < best[0]:
+                    best = (rank, p, gap, kind)
         if not best:
             return None
-        claimed.add(best[1]["permit_"])
+        if not (offsite and best[0][0] == 0):
+            claimed.add(best[1]["permit_"])
         return ("exact" if best[2] == 0 else "address", best[1], best[3])
 
     by_ward = collections.defaultdict(lambda: {
@@ -316,7 +384,7 @@ def main():
         for t in AMI_TIERS:
             rec[t] += int(b[t] or 0)
 
-        found = match_by_address(b.get("Match_addr"), units)
+        found = match_by_address(b, units)
 
         year, how, kind = None, "none", None
         if found:
