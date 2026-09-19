@@ -30,3 +30,4 @@ dist-ssr
 # Python bytecode cache from the importer scripts
 __pycache__/
 *.pyc
+.aro_reno_cache.json

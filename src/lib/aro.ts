@@ -33,8 +33,10 @@ export interface AroProject {
   u: number;
   /** Permit year, or null where no permit matched */
   y: string | null;
-  /** How that year was found: exact address, nearby address, or coordinates. */
-  m: "exact" | "address" | "spatial" | "none";
+  /** How that year was found. */
+  m: "exact" | "address" | "none";
+  /** Whether the permit was new construction or a conversion of an existing building. */
+  k: "new" | "conversion" | null;
 }
 
 export interface AroData {
@@ -48,9 +50,10 @@ export interface AroData {
     datedUnits: number;
     datedShare: number;
     undatedBuildings: number;
-    matchMetres: number;
     addrTolerance: number;
-    matchMethods: { exact: number; address: number; spatial: number };
+    unitsNewBuild: number;
+    unitsConversion: number;
+    matchMethods: { exact: number; address: number };
     note: string;
   };
   amiTiers: string[];

@@ -19,7 +19,9 @@ Two corrections do the work:
      address  same street, house number within ±25 (Chicago numbers run 100
               to the block, so this stays on the block face; it catches corner
               lots and buildings permitted under one of several addresses)
-     spatial  nearest permit within 75 m, as a last resort
+
+   Proximity matching was tried and dropped: reviewed by hand, roughly half its
+   matches were wrong, including two ARO buildings claiming the same permit.
 
    Every candidate must first pass a plausibility gate, because proximity and
    even a shared address say nothing about whether the permit is a building.
@@ -38,8 +40,17 @@ Two corrections do the work:
    foundation-only permits non-residential to avoid double-counting units, but
    a foundation permit for a 267-apartment project is a perfectly good date.
 
-   Candidates are then ranked: exact address over near address, larger
-   building over smaller, earlier permit over later.
+   Candidates are ranked: exact address over near, new construction over
+   renovation, larger building over smaller, earlier permit over later. A
+   permit can only date one ARO building.
+
+   BOTH PERMIT FILES ARE NEEDED. Many ARO buildings are conversions — the
+   Duncan is a converted YMCA — and never pull a new-construction permit. Some
+   genuinely new buildings are filed as renovations too: the Thompson's full
+   building permit for a "PROPOSED NEW 12 STORY RESIDENTIAL" tower is typed
+   RENOVATION/ALTERATION. So renovation permits are fetched as well, and are
+   required to state a unit count, which is the only thing separating a
+   conversion from a kitchen remodel.
 
    The gate costs coverage and is worth it. A wrong year is worse than no
    year, and buildings that fail are mostly rehabs and loft conversions that
@@ -76,12 +87,16 @@ ARO_MAP_PAGE = (
     "https://www.chicago.gov/city/en/sites/affordable-requirements-ordinance/home/aro-map.html"
 )
 WARDS = "https://data.cityofchicago.org/resource/p293-wvbd.geojson"
+PERMITS_API = "https://data.cityofchicago.org/resource/ydr8-5enu.json"
 PERMIT_CACHE = ".permits_cache.json"
+# Conversions never pull a new-construction permit, so the renovation file is
+# fetched too. Kept separate from the permitting page's cache, which is
+# deliberately new-construction only.
+RENO_CACHE = ".aro_reno_cache.json"
 OUT = "src/data/aro.json"
 
 # Last-resort match radius. 40 m dates only 74% of buildings; 150 m starts
 # picking up the building next door. 75 m is the usable middle.
-MATCH_M = 75
 # House-number slack for an address match, in street-number units. Chicago
 # numbers run 100 to the block, so this stays on the block face.
 ADDR_TOLERANCE = 25
@@ -91,7 +106,10 @@ NOT_A_BUILDING = re.compile(
     r"\bTENT\b|\bCANOPY\b|\bTEMPORARY\b|\bBLEACHER\b|\bSTAGE\b|\bTRUSS\b|\bSIGN\b|"
     r"\bFENCE\b|\bSHED\b|\bANTENNA\b|\bSWIMMING POOL\b|\bPARKING LOT\b|\bGREENHOUSE\b|"
     r"\bCRANE\b|\bHOIST\b|\bSCAFFOLD\b|\bSIDEWALK\b|\bWRECK\b|\bDEMOLITION\b|"
-    r"\bCAR ?WASH\b|\bSTATION\b")
+    r"\bCAR ?WASH\b|\bSTATION\b|\bTUCKPOINT|\bMAINTENANCE\b|\bPORCH\b|\bLINTEL")
+# "320 NEW APARTMENTS" — the permit importer's extractor only knows UNITS and
+# D.U., which is fine for counting new construction but loses conversions.
+APARTMENTS = re.compile(r"\b(\d{1,4})\s+(?:NEW\s+)?(?:RESIDENTIAL\s+)?APARTMENTS?\b")
 RESIDENTIAL = re.compile(
     r"\bDWELLING\b|\bAPARTMENT|\bRESIDEN|\bD\.?\s?U\.?\b|\bCONDO|\bUNITS?\b")
 
@@ -102,21 +120,37 @@ SUFFIXES = {
 }
 
 
-def plausible(permit, need, classifier):
+def unit_count(text, classifier):
+    """Units stated on a permit, extending the importer's extractor to apartments."""
+    n = classifier.extract_units(text)
+    m = APARTMENTS.search(text)
+    if m:
+        a = int(m.group(1))
+        if 1 <= a <= 2000:
+            n = max(n or 0, a)
+    return n
+
+
+def plausible(permit, need, classifier, require_count=False):
     """
     Unit count if this permit could be the building holding `need` ARO units,
     else None. `classifier` is the permit importer's module, reused for its
     regexes and unit extraction.
+
+    `require_count` is used for renovation permits, where an explicit unit
+    count is the only thing separating a conversion from a kitchen remodel.
     """
     t = (permit.get("work_description") or "").upper()
     if NOT_A_BUILDING.search(t) or classifier.REVISION.search(t):
         return None
-    if classifier.SFR.search(t) and need > 1:
+    # The ARO applies to developments of ten or more units, so a single-family
+    # permit is never the building — not even for a one-unit obligation.
+    if classifier.SFR.search(t):
         return None
-    n = classifier.extract_units(t)
+    n = unit_count(t, classifier)
     if n is not None and n < need:
         return None
-    if n is None and not RESIDENTIAL.search(t):
+    if n is None and (require_count or not RESIDENTIAL.search(t)):
         return None
     return n or 0
 
@@ -148,12 +182,26 @@ def get(url, params=None, timeout=120):
         return json.load(r)
 
 
-def haversine(lat1, lon1, lat2, lon2):
-    R = 6371000
-    p1, p2 = math.radians(lat1), math.radians(lat2)
-    dp, dl = p2 - p1, math.radians(lon2 - lon1)
-    h = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
-    return 2 * R * math.asin(math.sqrt(h))
+def fetch_renovations():
+    """Renovation permits that mention housing — where conversions live."""
+    if os.path.exists(RENO_CACHE):
+        print(f"  using cached {RENO_CACHE}")
+        return json.load(open(RENO_CACHE))
+    print("  fetching renovation permits…")
+    where = ("permit_type='PERMIT - RENOVATION/ALTERATION' AND issue_date>='2010-01-01' "
+             "AND latitude IS NOT NULL AND ("
+             "upper(work_description) like '%DWELLING%' OR "
+             "upper(work_description) like '%D.U.%' OR "
+             "upper(work_description) like '% UNIT%' OR "
+             "upper(work_description) like '%APARTMENT%' OR "
+             "upper(work_description) like '%RESIDENTIAL%')")
+    rows = get(PERMITS_API, {
+        "$select": ("permit_,issue_date,work_description,street_number,"
+                    "street_direction,street_name,latitude,longitude"),
+        "$where": where, "$limit": 60000, "$order": "issue_date",
+    })
+    json.dump(rows, open(RENO_CACHE, "w"))
+    return rows
 
 
 def fetch_aro():
@@ -212,20 +260,28 @@ def main():
         print(f"  ERROR: {PERMIT_CACHE} not found — run scripts/import_permits.py first.",
               file=sys.stderr)
         sys.exit(1)
-    permits = [p for p in json.load(open(PERMIT_CACHE)) if p.get("latitude")]
-    grid = collections.defaultdict(list)
+    newbuild = [p for p in json.load(open(PERMIT_CACHE)) if p.get("latitude")]
+    renos = [p for p in fetch_renovations() if p.get("latitude")]
+    print(f"  permit pool: {len(newbuild):,} new construction + {len(renos):,} renovation")
+
     by_street = collections.defaultdict(list)
-    for p in permits:
-        la, lo = float(p["latitude"]), float(p["longitude"])
-        grid[(round(la, 3), round(lo, 3))].append((la, lo, p))
-        k = street_key((p.get("street_number") or "").strip(),
-                       f"{(p.get('street_direction') or '').strip()} "
-                       f"{(p.get('street_name') or '').strip()}")
-        if k:
-            by_street[k[1]].append((k[0], p))
+    for kind, pool in (("new", newbuild), ("conversion", renos)):
+        for p in pool:
+            k = street_key((p.get("street_number") or "").strip(),
+                           f"{(p.get('street_direction') or '').strip()} "
+                           f"{(p.get('street_name') or '').strip()}")
+            if k:
+                by_street[k[1]].append((k[0], p, kind))
+
+    claimed = set()
 
     def match_by_address(match_addr, need):
-        """Best plausible permit on the address: exact, then bigger, then earlier."""
+        """
+        Best plausible permit on the address: exact address first, then the
+        larger building, then the earlier permit. New construction outranks a
+        renovation at the same address, since a conversion permit on a new
+        building is a later fit-out.
+        """
         head = (match_addr or "").split(",")[0].strip()
         m = re.match(r"^(\d+)\s+(.*)$", head)
         if not m:
@@ -235,33 +291,21 @@ def main():
             return None
         num, street = key
         best = None
-        for n, p in by_street.get(street, []):
+        for n, p, kind in by_street.get(street, []):
             gap = abs(n - num)
-            if gap > ADDR_TOLERANCE:
+            if gap > ADDR_TOLERANCE or p["permit_"] in claimed:
                 continue
-            units = plausible(p, need, cls)
+            units = plausible(p, need, cls, require_count=(kind == "conversion"))
             if units is None:
                 continue
-            rank = (0 if gap == 0 else 1, -units, p["issue_date"])
+            rank = (0 if gap == 0 else 1, 0 if kind == "new" else 1,
+                    -units, p["issue_date"])
             if best is None or rank < best[0]:
-                best = (rank, p, gap)
+                best = (rank, p, gap, kind)
         if not best:
             return None
-        return ("exact" if best[2] == 0 else "address", best[1])
-
-    def nearest_permit(lat, lon, need):
-        """Nearest plausible permit — proximity alone is not evidence."""
-        best = None
-        kla, klo = round(lat, 3), round(lon, 3)
-        for dla in (-1, 0, 1):
-            for dlo in (-1, 0, 1):
-                for la, lo, p in grid.get((round(kla + dla * 0.001, 3),
-                                           round(klo + dlo * 0.001, 3)), []):
-                    d = haversine(lat, lon, la, lo)
-                    if d <= MATCH_M and (best is None or d < best[0]):
-                        if plausible(p, need, cls) is not None:
-                            best = (d, p)
-        return best
+        claimed.add(best[1]["permit_"])
+        return ("exact" if best[2] == 0 else "address", best[1], best[3])
 
     by_ward = collections.defaultdict(lambda: {
         "units": 0, "buildings": 0, "dated": 0, "offSite": 0,
@@ -272,8 +316,11 @@ def main():
     projects = collections.defaultdict(list)
     undated, unplaced, dated_units = [], 0, 0
     methods = collections.Counter()
+    kinds = collections.Counter()
 
-    for b in buildings:
+    # Largest obligation first: a permit can only date one building, and a
+    # one-unit set-aside should not take the permit a 40-unit one needs.
+    for b in sorted(buildings, key=lambda x: -int(x["ARO_Units"] or 0)):
         units = int(b["ARO_Units"] or 0)
         w = ward_of(b["lat"], b["lon"])
         if w is None:
@@ -288,13 +335,10 @@ def main():
             rec[t] += int(b[t] or 0)
 
         found = match_by_address(b.get("Match_addr"), units)
-        if not found:
-            hit = nearest_permit(b["lat"], b["lon"], units)
-            found = ("spatial", hit[1]) if hit else None
 
-        year, how = None, "none"
+        year, how, kind = None, "none", None
         if found:
-            how, permit = found
+            how, permit, kind = found
             year = permit["issue_date"][:4]
             by_year[year] += units
             by_ward_year[w][year] += units
@@ -303,6 +347,8 @@ def main():
         else:
             undated.append((b.get("Name") or "").strip() or b.get("Project_Ad"))
         methods[how] += 1
+        if kind:
+            kinds[kind] += units
 
         projects[w].append({
             "n": (b.get("Name") or "").strip() or "—",
@@ -310,6 +356,7 @@ def main():
             "u": units,
             "y": year,
             "m": how,
+            "k": kind,
         })
 
     print(f"  placed in a ward: {len(buildings) - unplaced}/{len(buildings)}")
@@ -317,7 +364,7 @@ def main():
           f"{dated_units:,}/{total_units:,} units ({dated_units / total_units * 100:.0f}%)")
     print(f"    by exact address:     {methods['exact']}")
     print(f"    by address ±{ADDR_TOLERANCE}:      {methods['address']}")
-    print(f"    by coordinates only:  {methods['spatial']}")
+    print(f"  units in new buildings: {kinds['new']:,}   in conversions: {kinds['conversion']:,}")
     print(f"  undated (no plausible new-construction permit — mostly rehabs "
           f"and conversions): {len(undated)}")
 
@@ -332,16 +379,16 @@ def main():
             "datedUnits": dated_units,
             "datedShare": round(dated_units / total_units, 4),
             "undatedBuildings": len(undated),
-            "matchMetres": MATCH_M,
             "addrTolerance": ADDR_TOLERANCE,
+            "unitsNewBuild": kinds["new"],
+            "unitsConversion": kinds["conversion"],
             "matchMethods": dict(methods),
             "note": ("Rental ARO units only. Excludes for-sale ARO units and units "
                      "bought out through in-lieu fees. Years are the issue year of the "
                      "nearest new-construction permit, not a field in the source. "
-                     "Buildings are matched to that permit by address where possible "
-                     "and by coordinates only as a fallback, and every candidate "
-                     "must plausibly be a residential building large enough to "
-                     "contain the ARO units."),
+                     "Buildings are matched to that permit by address only, and "
+                     "every candidate must plausibly be a residential building "
+                     "large enough to contain the ARO units."),
         },
         "amiTiers": [t.replace("ARO_", "") for t in AMI_TIERS],
         "byWard": {str(w): by_ward[w] for w in sorted(by_ward)},

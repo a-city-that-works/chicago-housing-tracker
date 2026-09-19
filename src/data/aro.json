@@ -6,18 +6,18 @@
   "vintage": "2026-02-06",
   "buildings": 206,
   "units": 2159,
-  "datedUnits": 1800,
-  "datedShare": 0.8337,
-  "undatedBuildings": 45,
-  "matchMetres": 75,
+  "datedUnits": 1961,
+  "datedShare": 0.9083,
+  "undatedBuildings": 26,
   "addrTolerance": 25,
+  "unitsNewBuild": 1610,
+  "unitsConversion": 351,
   "matchMethods": {
-   "address": 44,
-   "exact": 103,
-   "none": 45,
-   "spatial": 14
+   "exact": 139,
+   "address": 41,
+   "none": 26
   },
-  "note": "Rental ARO units only. Excludes for-sale ARO units and units bought out through in-lieu fees. Years are the issue year of the nearest new-construction permit, not a field in the source. Buildings are matched to that permit by address where possible and by coordinates only as a fallback, and every candidate must plausibly be a residential building large enough to contain the ARO units."
+  "note": "Rental ARO units only. Excludes for-sale ARO units and units bought out through in-lieu fees. Years are the issue year of the nearest new-construction permit, not a field in the source. Buildings are matched to that permit by address only, and every candidate must plausibly be a residential building large enough to contain the ARO units."
  },
  "amiTiers": [
   "30",
@@ -32,7 +32,7 @@
   "1": {
    "units": 183,
    "buildings": 24,
-   "dated": 24,
+   "dated": 23,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -58,7 +58,7 @@
   "3": {
    "units": 20,
    "buildings": 3,
-   "dated": 2,
+   "dated": 3,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -71,7 +71,7 @@
   "4": {
    "units": 76,
    "buildings": 6,
-   "dated": 4,
+   "dated": 6,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 1,
@@ -97,7 +97,7 @@
   "25": {
    "units": 20,
    "buildings": 4,
-   "dated": 1,
+   "dated": 4,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -123,7 +123,7 @@
   "27": {
    "units": 934,
    "buildings": 37,
-   "dated": 33,
+   "dated": 35,
    "offSite": 7,
    "ARO_30": 1,
    "ARO_40": 27,
@@ -136,7 +136,7 @@
   "28": {
    "units": 72,
    "buildings": 7,
-   "dated": 3,
+   "dated": 1,
    "offSite": 4,
    "ARO_30": 0,
    "ARO_40": 3,
@@ -162,7 +162,7 @@
   "30": {
    "units": 5,
    "buildings": 2,
-   "dated": 1,
+   "dated": 2,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -175,7 +175,7 @@
   "31": {
    "units": 15,
    "buildings": 2,
-   "dated": 1,
+   "dated": 2,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -201,7 +201,7 @@
   "34": {
    "units": 162,
    "buildings": 9,
-   "dated": 7,
+   "dated": 9,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -227,7 +227,7 @@
   "36": {
    "units": 17,
    "buildings": 5,
-   "dated": 3,
+   "dated": 5,
    "offSite": 2,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -266,7 +266,7 @@
   "40": {
    "units": 29,
    "buildings": 7,
-   "dated": 4,
+   "dated": 7,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -279,7 +279,7 @@
   "41": {
    "units": 1,
    "buildings": 1,
-   "dated": 0,
+   "dated": 1,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -344,7 +344,7 @@
   "46": {
    "units": 86,
    "buildings": 15,
-   "dated": 13,
+   "dated": 14,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -357,7 +357,7 @@
   "47": {
    "units": 157,
    "buildings": 25,
-   "dated": 19,
+   "dated": 18,
    "offSite": 0,
    "ARO_30": 7,
    "ARO_40": 2,
@@ -370,7 +370,7 @@
   "48": {
    "units": 43,
    "buildings": 6,
-   "dated": 2,
+   "dated": 4,
    "offSite": 2,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -383,7 +383,7 @@
   "49": {
    "units": 3,
    "buildings": 1,
-   "dated": 0,
+   "dated": 1,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -396,7 +396,7 @@
   "50": {
    "units": 3,
    "buildings": 1,
-   "dated": 0,
+   "dated": 1,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
@@ -408,76 +408,80 @@
   }
  },
  "byYear": {
+  "2011": 3,
   "2012": 10,
   "2013": 27,
-  "2014": 100,
-  "2015": 48,
-  "2016": 29,
-  "2017": 240,
-  "2018": 181,
-  "2019": 205,
-  "2020": 177,
-  "2021": 120,
-  "2022": 372,
-  "2023": 92,
-  "2024": 114,
-  "2025": 49,
-  "2026": 36
+  "2014": 93,
+  "2015": 56,
+  "2016": 55,
+  "2017": 247,
+  "2018": 232,
+  "2019": 282,
+  "2020": 164,
+  "2021": 106,
+  "2022": 426,
+  "2023": 126,
+  "2024": 117,
+  "2025": 11,
+  "2026": 6
  },
  "byWardYear": {
   "1": {
    "2012": 10,
    "2013": 2,
-   "2014": 10,
-   "2015": 42,
-   "2016": 1,
+   "2014": 2,
+   "2015": 48,
+   "2016": 27,
    "2017": 32,
    "2018": 16,
-   "2019": 29,
+   "2019": 22,
    "2024": 12,
-   "2025": 3,
-   "2026": 26
+   "2025": 3
   },
   "2": {
    "2018": 7,
    "2019": 21,
-   "2025": 25
+   "2023": 25
   },
   "3": {
+   "2015": 2,
    "2019": 10,
    "2021": 8
   },
   "4": {
    "2014": 63,
    "2018": 1,
-   "2019": 7
+   "2019": 2,
+   "2024": 7,
+   "2026": 3
   },
   "5": {
-   "2025": 1
+   "2014": 1
   },
   "25": {
-   "2019": 7
+   "2016": 10,
+   "2019": 8,
+   "2023": 2
   },
   "26": {
-   "2016": 6,
-   "2026": 5
+   "2016": 3,
+   "2017": 3,
+   "2024": 3
   },
   "27": {
-   "2013": 4,
    "2014": 24,
-   "2016": 12,
+   "2016": 8,
    "2017": 111,
    "2018": 43,
-   "2019": 98,
-   "2020": 111,
-   "2021": 48,
-   "2022": 301,
+   "2019": 110,
+   "2020": 103,
+   "2021": 56,
+   "2022": 333,
    "2023": 74,
-   "2024": 62
+   "2024": 66
   },
   "28": {
-   "2021": 1,
-   "2024": 24
+   "2024": 10
   },
   "29": {
    "2016": 5,
@@ -486,23 +490,25 @@
    "2024": 4
   },
   "30": {
-   "2020": 2
+   "2020": 2,
+   "2024": 3
   },
   "31": {
-   "2014": 3
+   "2014": 3,
+   "2018": 12
   },
   "32": {
-   "2013": 3,
    "2016": 1,
    "2017": 3,
-   "2018": 6,
+   "2018": 8,
    "2019": 3,
-   "2025": 9
+   "2022": 3
   },
   "34": {
    "2018": 75,
+   "2019": 52,
    "2020": 16,
-   "2022": 16
+   "2022": 19
   },
   "35": {
    "2019": 22,
@@ -512,7 +518,9 @@
   "36": {
    "2013": 3,
    "2015": 4,
-   "2018": 2
+   "2017": 2,
+   "2018": 2,
+   "2022": 6
   },
   "38": {
    "2017": 2
@@ -521,52 +529,68 @@
    "2019": 2
   },
   "40": {
+   "2013": 2,
+   "2019": 16,
    "2020": 3,
    "2021": 1,
-   "2022": 4
+   "2022": 7
+  },
+  "41": {
+   "2016": 1
   },
   "42": {
-   "2020": 7,
-   "2022": 4
+   "2022": 4,
+   "2023": 7
   },
   "43": {
    "2017": 54,
    "2024": 4
   },
   "44": {
+   "2013": 5,
    "2015": 2,
-   "2018": 8,
-   "2020": 17,
+   "2018": 1,
+   "2019": 2,
+   "2020": 19,
    "2021": 2,
    "2025": 3,
-   "2026": 5
+   "2026": 3
   },
   "45": {
    "2017": 6,
    "2020": 5,
-   "2021": 17
+   "2021": 11,
+   "2022": 6
   },
   "46": {
    "2017": 24,
    "2018": 7,
    "2020": 16,
-   "2021": 11,
-   "2022": 24
+   "2021": 13,
+   "2022": 25
   },
   "47": {
    "2013": 15,
-   "2016": 4,
-   "2017": 6,
-   "2018": 16,
-   "2021": 22,
+   "2017": 4,
+   "2018": 57,
+   "2019": 6,
+   "2021": 5,
    "2022": 14,
    "2023": 13,
    "2024": 8,
-   "2025": 8
+   "2025": 2
   },
   "48": {
+   "2017": 4,
    "2021": 8,
-   "2022": 9
+   "2022": 9,
+   "2025": 3
+  },
+  "49": {
+   "2018": 3
+  },
+  "50": {
+   "2011": 3
   }
  },
  "projects": {
@@ -575,169 +599,193 @@
     "n": "Wicker Park Connection",
     "a": "1640 W. Division St.",
     "u": 26,
-    "y": "2026",
-    "m": "address"
+    "y": "2016",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "MiCA",
     "a": "2733 W. Belden Ave",
     "u": 22,
     "y": "2015",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Trailhead Apartments",
     "a": "1744 N. Western Ave",
     "u": 16,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Noca Blu",
     "a": "2340 N. California Ave",
     "u": 14,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "A.M. 1980",
     "a": "1980 N. Milwaukee Ave",
     "u": 13,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "L Logan",
     "a": "2211 N Milwaukee",
     "u": 12,
     "y": "2015",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1611 West Division",
     "a": "1611 W. Division St.",
     "u": 10,
     "y": "2012",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Motif on Belden",
     "a": "2845 W Belden",
     "u": 10,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Oasis of Bucktown",
     "a": "2400 W Wabansia Ave",
     "u": 9,
-    "y": "2019",
-    "m": "spatial"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "MODE Logan Square",
     "a": "2501 W Armitage",
     "u": 8,
     "y": "2015",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1237 N. Milwaukee Ave Owner LLC",
     "a": "1241 N. Milwaukee Ave",
     "u": 6,
-    "y": "2014",
-    "m": "address"
+    "y": "2015",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "1957 N.Fairfield",
     "a": "1957 N. Fairfiled Ave",
     "u": 6,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Ash Chicago",
     "a": "1257-1301 N Ashland Ave",
     "u": 5,
     "y": "2024",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "1964 N Milwaukee",
     "a": "1964 N. Milwaukee Ave",
     "u": 4,
     "y": "2019",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "\u2014",
     "a": "2354 N. Washtenaw Ave.",
     "u": 4,
     "y": "2024",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Ash Chicago",
     "a": "1235-37 N Ashland Ave",
     "u": 3,
     "y": "2025",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "\u2014",
     "a": "2357 N. Washtenaw Ave.",
     "u": 3,
     "y": "2024",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1038 N Ashland",
     "a": "1038 N Ashland",
     "u": 2,
     "y": "2017",
-    "m": "address"
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Wicker Park Place",
     "a": "1504 W. Haddon Ave.",
     "u": 2,
     "y": "2014",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "1645 W. LeMoyne",
     "a": "1645 W. LeMoyne St.",
     "u": 2,
-    "y": "2014",
-    "m": "address"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "2404-14 W Cortland",
     "a": "2404-14 W. Cortland St.",
     "u": 2,
     "y": "2013",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Fullerton Properties LLC",
     "a": "2529 W Fullerton",
     "u": 2,
     "y": "2017",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "East Village Lofts",
     "a": "1062 N Ashland",
     "u": 1,
     "y": "2016",
-    "m": "spatial"
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "2556 Armtiage LLC",
     "a": "2556 W Armitage",
     "u": 1,
     "y": "2017",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    }
   ],
   "2": [
@@ -746,42 +794,48 @@
     "a": "1130 N Dearborn",
     "u": 34,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "The Ludlow",
     "a": "2032 N Clybourn",
     "u": 25,
-    "y": "2025",
-    "m": "address"
+    "y": "2023",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Than Tower",
     "a": "335-43 W. Schiller St.",
     "u": 21,
     "y": "2019",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "North & Vine",
     "a": "633 W. North Ave",
     "u": 7,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Axis Apartments and Lofts",
     "a": "441 E Erie",
     "u": 3,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "Southport Lofts",
     "a": "2065 N Southport Ave",
     "u": 1,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    }
   ],
   "3": [
@@ -790,21 +844,24 @@
     "a": "2111 S. Wabash Ave",
     "u": 10,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1400 S Wabash",
     "a": "1400 S. Wabash Ave",
     "u": 8,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Unity Hall",
     "a": "3138-40  S. Indiana Ave",
     "u": 2,
-    "y": null,
-    "m": "none"
+    "y": "2015",
+    "m": "address",
+    "k": "conversion"
    }
   ],
   "4": [
@@ -813,42 +870,48 @@
     "a": "5105 S. Harper Ave",
     "u": 36,
     "y": "2014",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Vue53",
     "a": "1330 E. 53rd St.",
     "u": 27,
     "y": "2014",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Imprint",
     "a": "739 S Clark",
     "u": 7,
-    "y": "2019",
-    "m": "address"
+    "y": "2024",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "4601 S Ellis Ave",
     "a": "4601 S Ellis Ave",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2026",
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "5228 S Blackstone LLC",
     "a": "1424 E 53rd St",
     "u": 2,
-    "y": null,
-    "m": "none"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Lake Park LLC",
     "a": "235-43 E. 31st St.",
     "u": 1,
     "y": "2018",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    }
   ],
   "5": [
@@ -856,8 +919,9 @@
     "n": "5432 S. Woodlawn",
     "a": "5432 S. Woodlawn Ave",
     "u": 1,
-    "y": "2025",
-    "m": "address"
+    "y": "2014",
+    "m": "address",
+    "k": "conversion"
    }
   ],
   "25": [
@@ -865,29 +929,33 @@
     "n": "Woodworking Lofts",
     "a": "1432 W. 21st St.",
     "u": 10,
-    "y": null,
-    "m": "none"
+    "y": "2016",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "The Rosie",
     "a": "1461 S. Blue Island Ave",
     "u": 7,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "2719 W Cermak",
     "a": "2719 W Cermak Road",
     "u": 2,
-    "y": null,
-    "m": "none"
+    "y": "2023",
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "Blue Island",
     "a": "1907 S. Blue Island Ave",
     "u": 1,
-    "y": null,
-    "m": "none"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    }
   ],
   "26": [
@@ -895,29 +963,33 @@
     "n": "1623 N. Talman Ave",
     "a": "1623 N. Talman Ave",
     "u": 5,
-    "y": "2026",
-    "m": "spatial"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "Vista on the Park",
     "a": "1411 N Fairfield",
     "u": 3,
-    "y": "2016",
-    "m": "spatial"
+    "y": "2024",
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "1447 N. Washtenaw Ave",
     "a": "1447 N. Washtenaw Ave",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2017",
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "1955 Richmond Place",
     "a": "1955 N. Richmond St.",
     "u": 3,
     "y": "2016",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "27": [
@@ -926,259 +998,296 @@
     "a": "160 N. Elizabeth St.",
     "u": 75,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Flora",
     "a": "1114 W Carroll",
     "u": 74,
     "y": "2023",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Arthur on Aberdeen",
     "a": "210 N. Aberdeen St.",
     "u": 73,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Elizabeth",
     "a": "225 N Elizabeth St",
     "u": 70,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Stead 220",
     "a": "220 N Ada St.",
     "u": 62,
     "y": "2024",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Atrium at Old Town Park",
     "a": "228 W Hill St",
     "u": 55,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Atrium at Old Town Park",
     "a": "202 W Hill St",
     "u": 43,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Avenir",
     "a": "730 N. Milwuakee Ave",
     "u": 43,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Atrium at Old Town Park",
     "a": "1150 N Wells",
     "u": 41,
     "y": "2017",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "The Jax",
     "a": "1220 W. Jackson Blvd.",
     "u": 34,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "868 N Wells (North Union)",
     "a": "868 N Wells",
     "u": 33,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Thompson",
     "a": "150 N Ashland Ave",
     "u": 32,
-    "y": null,
-    "m": "none"
+    "y": "2022",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "AMLI 808",
     "a": "808 N. Wells St.",
     "u": 32,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Parq Fulton",
     "a": "1400 W Randolph",
     "u": 28,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Dylan",
     "a": "160 N. Morgan St.",
     "u": 28,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Mason",
     "a": "180 N. Ada St.",
     "u": 26,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Evo Union Park",
     "a": "1454 W Randolph",
     "u": 24,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Xavier Chicago",
     "a": "625 W. Division St.",
     "u": 24,
     "y": "2014",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "One Six Six",
     "a": "166 N. Aberdeen St.",
     "u": 22,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The 808",
     "a": "808 N. Cleveland Ave",
     "u": 20,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Nevele 22",
     "a": "1122 W. Chicago Ave",
     "u": 19,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "920 North Wells (North Union)",
     "a": "920 N Wells",
     "u": 16,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "2329 W. Monroe St.",
     "a": "2329 W. Monroe St.",
     "u": 8,
-    "y": "2020",
-    "m": "address"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "3803 W Ohio St",
     "a": "3803 W Ohio St",
     "u": 8,
-    "y": null,
-    "m": "none"
+    "y": "2021",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Aberdeen East",
     "a": "171 N. Aberdeen St.",
     "u": 6,
     "y": "2016",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "2824 W Van Buren",
     "a": "2824 W. Van Buren St.",
     "u": 6,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Inspire West Town",
     "a": "670 N May St",
     "u": 6,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "3639 W Iowa",
     "a": "3639 W Iowa",
     "u": 4,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "634-36 N. Sawyer Avenue",
     "a": "634-36 N Sawyer",
     "u": 4,
-    "y": "2016",
-    "m": "spatial"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "871 N Franklin (North Union)",
     "a": "871 N Franklin St",
     "u": 4,
-    "y": "2013",
-    "m": "address"
+    "y": "2024",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "1801 W Grand",
     "a": "1801 W Grand",
     "u": 3,
     "y": "2022",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "2848 W Adams",
     "a": "2848 W Adams",
     "u": 3,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Westerly Apts.",
     "a": "740 N. Aberdeen St.",
     "u": 3,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1447 N. Superior Holding",
     "a": "1447 W. Superior St.",
     "u": 2,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "Seven 10 West",
     "a": "710 W. Grand Ave",
     "u": 1,
     "y": "2016",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "713 North Milwaukee",
     "a": "713 N. Milwaukee Ave",
     "u": 1,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "847 N. Larabee",
     "a": "847 N. Larabee St.",
     "u": 1,
     "y": "2016",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "28": [
@@ -1187,49 +1296,56 @@
     "a": "1922 W. Ogden Ave",
     "u": 28,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "District Haus",
     "a": "1310 S Ashland Ave",
     "u": 14,
-    "y": "2024",
-    "m": "spatial"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "1440 Fillmore",
     "a": "1440 W. Fillmore St.",
     "u": 10,
     "y": "2024",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "4114 W West End Avenue",
     "a": "4114  West End Ave",
     "u": 8,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "20 S Hamlin",
     "a": "20 S Hamlin Blvd",
     "u": 7,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "3121 W Monroe",
     "a": "3121 W Monroe",
     "u": 4,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "1100 S Western LLC",
     "a": "1102 S Western Ave",
     "u": 1,
-    "y": "2021",
-    "m": "exact"
+    "y": null,
+    "m": "none",
+    "k": null
    }
   ],
   "29": [
@@ -1238,28 +1354,32 @@
     "a": "2114-58 N Nashville Ave",
     "u": 6,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "2931-57 N. Harlem LLC",
     "a": "2931 N Harlem",
     "u": 5,
     "y": "2016",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Galewood Residences",
     "a": "1619 N Neva",
     "u": 4,
     "y": "2024",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Harlem & Wrightwood",
     "a": "2601 N Harlem",
     "u": 2,
     "y": "2017",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    }
   ],
   "30": [
@@ -1267,15 +1387,17 @@
     "n": "5416-24 W Belmont Ave",
     "a": "5416-24 W Belmont Ave",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2024",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "The Avondale Residences II",
     "a": "4200 W Belmont",
     "u": 2,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "31": [
@@ -1283,15 +1405,17 @@
     "n": "The Field's Lofts",
     "a": "4000 W. Diversey Ave",
     "u": 12,
-    "y": null,
-    "m": "none"
+    "y": "2018",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "2917-39 N. Central",
     "a": "2917 N Central",
     "u": 3,
     "y": "2014",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "32": [
@@ -1299,71 +1423,81 @@
     "n": "Triangle Square",
     "a": "2075 N Elston",
     "u": 9,
-    "y": "2025",
-    "m": "spatial"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "St. Paul Western Lofts",
     "a": "1741 N. Western Ave",
     "u": 3,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "2219 N. Hamilton LLC",
     "a": "2219 N Hamilton Ave",
     "u": 3,
-    "y": "2013",
-    "m": "address"
+    "y": "2022",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "2435 N Western",
     "a": "2435 N Western",
     "u": 3,
     "y": "2018",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "1879 N Milwaukee",
     "a": "1879 N Milwaukee",
     "u": 2,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1938 W. North Ave",
     "a": "1938 W North Ave",
     "u": 2,
-    "y": null,
-    "m": "none"
+    "y": "2018",
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "3220 Lincoln",
     "a": "3220 N. Lincoln Ave",
     "u": 2,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Bucktown Gateway",
     "a": "1667 N. Western Ave",
     "u": 1,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Western",
     "a": "1914 N. Milwaukee Ave",
     "u": 1,
     "y": "2016",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "SOBE Apts.",
     "a": "3208 N. Southport Ave",
     "u": 1,
     "y": "2018",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    }
   ],
   "34": [
@@ -1372,63 +1506,72 @@
     "a": "845-55 W. Madison St.",
     "u": 59,
     "y": "2018",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "The Duncan",
     "a": "1515 W. Monroe St.",
     "u": 52,
-    "y": null,
-    "m": "none"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "1050 Van Buren",
     "a": "1044 W Van Buren St.",
     "u": 16,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Onni 352 N Union",
     "a": "352 N Union",
     "u": 9,
     "y": "2020",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Union West",
     "a": "939 W. Washington Blvd.",
     "u": 9,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Milieu Apts.",
     "a": "205 S. Peoria St.",
     "u": 7,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1125 Van Buren LLC",
     "a": "1125 W Van Buren St.",
     "u": 5,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1218 W Lexington St",
     "a": "1218 W Lexington",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2022",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "MDA Apartments",
     "a": "60 E Benton Pl",
     "u": 2,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "35": [
@@ -1437,21 +1580,24 @@
     "a": "2480-2522 N. Milwaukee Ave",
     "u": 22,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "2823 W. Belmont Ave",
     "a": "2823 W. Belmont Ave",
     "u": 5,
     "y": "2023",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Belmont Ridge",
     "a": "3729 W Belmont Ave",
     "u": 2,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "36": [
@@ -1459,36 +1605,41 @@
     "n": "2312 W Ohio",
     "a": "2312 W Ohio",
     "u": 6,
-    "y": null,
-    "m": "none"
+    "y": "2022",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Luxe on Chicago",
     "a": "1838-50 W Chicago",
     "u": 4,
     "y": "2015",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "6602-22 W. Diversey",
     "a": "6602-22 W. Diversey Ave",
     "u": 3,
     "y": "2013",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "2815-19 N. Natoma",
     "a": "2817 N Natoma",
     "u": 2,
     "y": "2018",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Wicker Park Apartments",
     "a": "945 N  Western",
     "u": 2,
-    "y": null,
-    "m": "none"
+    "y": "2017",
+    "m": "exact",
+    "k": "conversion"
    }
   ],
   "38": [
@@ -1497,7 +1648,8 @@
     "a": "4015 N. Narragansett Ave",
     "u": 2,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "39": [
@@ -1506,7 +1658,8 @@
     "a": "4346 W Lawrence Ave",
     "u": 2,
     "y": "2019",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "40": [
@@ -1514,50 +1667,57 @@
     "n": "Anderson Point",
     "a": "5700 N. Ashland Ave",
     "u": 16,
-    "y": null,
-    "m": "none"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "5216 N Lincoln Ave/2505 Farragut",
     "a": "2501-11 W Farragut Ave (5214-5224 N Lincoln)",
     "u": 4,
     "y": "2022",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "The Convent",
     "a": "4927 N. Claremont Ave",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2022",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "2402 W Carmen Ave",
     "a": "2402 W Carmen Ave",
     "u": 2,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "5822 North Western, LLC",
     "a": "5822 N. Western Ave",
     "u": 2,
-    "y": null,
-    "m": "none"
+    "y": "2013",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "4920 Lincoln Place",
     "a": "4920 N Lincoln Ave",
     "u": 1,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Trieuth",
     "a": "5015-5025 N Lincoln Ave",
     "u": 1,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "41": [
@@ -1565,8 +1725,9 @@
     "n": "\u2014",
     "a": "7240 W Devon Ave",
     "u": 1,
-    "y": null,
-    "m": "none"
+    "y": "2016",
+    "m": "exact",
+    "k": "conversion"
    }
   ],
   "42": [
@@ -1574,15 +1735,17 @@
     "n": "Millie on Michigan",
     "a": "300 N Michigan Ave",
     "u": 7,
-    "y": "2020",
-    "m": "spatial"
+    "y": "2023",
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "The Leo",
     "a": "741 N Wells",
     "u": 4,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "43": [
@@ -1591,14 +1754,16 @@
     "a": "2335 N. Lincoln Ave",
     "u": 54,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Base",
     "a": "2763 N Seminary",
     "u": 4,
     "y": "2024",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "44": [
@@ -1607,77 +1772,88 @@
     "a": "3460 N. Broadway",
     "u": 11,
     "y": "2020",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "The Medallion",
     "a": "3121 N. Broadway",
     "u": 7,
-    "y": "2018",
-    "m": "address"
+    "y": "2020",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Panorama",
     "a": "3300 N. Clark St.",
     "u": 5,
-    "y": "2020",
-    "m": "spatial"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "The Grace Apartments",
     "a": "3757 N Sheffield Ave",
     "u": 5,
-    "y": null,
-    "m": "none"
+    "y": "2013",
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "3204 N Clifton",
     "a": "3204 N Clifton",
     "u": 3,
     "y": "2026",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "The Bel",
     "a": "941 W. Belmont Ave",
     "u": 3,
     "y": "2025",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Patterson Green LLC",
     "a": "1118 W Patterson Ave",
     "u": 2,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Clarkview Apts.",
     "a": "3228 N. Clark St.",
     "u": 2,
     "y": "2015",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "621 W Belmont LLC",
     "a": "621 W Belmont",
     "u": 2,
-    "y": "2026",
-    "m": "spatial"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "3647 N. Southport",
     "a": "3647 N. Southport Ave",
     "u": 1,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "913 School Apts.",
     "a": "913 W. School St.",
     "u": 1,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "45": [
@@ -1686,42 +1862,48 @@
     "a": "4715 W. Irving Park Road",
     "u": 11,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "4849 N Lipps Ave",
     "a": "4849 N Lipps Ave",
     "u": 11,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "Six Corners Lofts",
     "a": "4714 W Irving Park Road",
     "u": 6,
-    "y": "2021",
-    "m": "address"
+    "y": "2022",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "5338 W Argyle",
     "a": "5342-52 W Argyle",
     "u": 5,
     "y": "2020",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Jefferson Park Residences",
     "a": "4758 N. Laramie Ave",
     "u": 4,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "4812-15 W. Montrose Apts.",
     "a": "4812 W. Montrose Ave",
     "u": 2,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "46": [
@@ -1730,105 +1912,120 @@
     "a": "811 W. Agatite Ave",
     "u": 20,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Solverre",
     "a": "4600 N Marine Dr",
     "u": 8,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Winnie",
     "a": "4740 N Winthrop Ave",
     "u": 8,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Wrigleyville Lofts",
     "a": "949 W. Dakin St.",
     "u": 8,
     "y": "2020",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Upshore Chapter",
     "a": "4555 N. Sheridan Road",
     "u": 7,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Harmony Apartments",
     "a": "4513 N Clark St",
     "u": 6,
     "y": "2022",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "The Wilmore",
     "a": "4600 N. Kenmore Ave",
     "u": 6,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "\u2014",
     "a": "3821 N. Ashland Ave",
     "u": 5,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Platform 4611",
     "a": "4601 N Broadway",
     "u": 5,
     "y": "2021",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Lawrence Lofts",
     "a": "1049 W Lawrence Ave",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2022",
+    "m": "address",
+    "k": "conversion"
    },
    {
     "n": "Fifth on Hazel",
     "a": "4453 N Hazel St",
     "u": 3,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Viridian on Sheridan",
     "a": "734 W. Sheridan Rd.",
     "u": 3,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "4533 N Clark St.",
     "a": "4533 N. Clark St",
     "u": 2,
-    "y": "2022",
-    "m": "address"
+    "y": "2021",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "4420 N. Sheridan Apts.",
     "a": "4420 N. Sheridan Road",
     "u": 1,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "927 W. Irving",
     "a": "927 W. Irving Park Rd.",
     "u": 1,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    }
   ],
   "47": [
@@ -1836,176 +2033,201 @@
     "n": "The Draper",
     "a": "5050 N. Broadway",
     "u": 35,
-    "y": null,
-    "m": "none"
+    "y": "2018",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "The Raven Residences",
     "a": "1825 W Lawrence",
     "u": 17,
-    "y": "2021",
-    "m": "spatial"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "Ravenswood Terrace",
     "a": "1801 W. Argyle St.",
     "u": 15,
     "y": "2013",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Belfield",
     "a": "3924 N Lincoln Ave",
     "u": 10,
     "y": "2023",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "\u2014",
     "a": "3431 N Ashland Ave",
     "u": 8,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Five Points Lakeview",
     "a": "3605 N Raveswood Ave.",
     "u": 8,
     "y": "2024",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "1900 Lawrence",
     "a": "1900 W. Lawrence Ave",
     "u": 6,
-    "y": null,
-    "m": "none"
+    "y": "2019",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Lawrence",
     "a": "2150 W Lawrence",
     "u": 6,
-    "y": "2025",
-    "m": "spatial"
+    "y": "2018",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "\u2014",
     "a": "2405 W. Hutchinson St.",
     "u": 5,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Topaz",
     "a": "3421 N Ashland Ave",
     "u": 5,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Ainslie",
     "a": "4914 N. Clark St.",
     "u": 5,
     "y": "2018",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Opus Chicago",
     "a": "1802 W Berenice",
     "u": 4,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Henry",
     "a": "1819 W. Montrose Ave",
     "u": 4,
-    "y": "2017",
-    "m": "spatial"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "La Lux Apartments",
     "a": "4747-57 N. Ashland Ave",
     "u": 4,
     "y": "2018",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "4801 N. Ravenswood Ave",
     "a": "4801 N. Ravenswood Ave",
     "u": 4,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "2042 W Irving Park",
     "a": "2042 W Irving Park",
     "u": 3,
     "y": "2023",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "Saxony Wilson",
     "a": "1630 W. Wilson Ave",
     "u": 2,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "1911-21 W. Irving Park Rd.",
     "a": "1911 W. Irving Park Rd.",
     "u": 2,
-    "y": "2016",
-    "m": "address"
+    "y": "2017",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "2206 W Lawrence Ave",
     "a": "2206 W Lawrence Ave",
     "u": 2,
     "y": "2025",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "2247 W. Lawrence Ave",
     "a": "2247 W Lawrence Ave",
     "u": 2,
     "y": "2018",
-    "m": "address"
+    "m": "address",
+    "k": "new"
    },
    {
     "n": "Mode Lakeview",
     "a": "3462 N. Lincoln Ave",
     "u": 2,
     "y": "2017",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "4010 N Lincoln Ave",
     "a": "4010 N Lincoln Ave",
     "u": 2,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "4048 N Hermitage",
     "a": "4048 N Hermitage Ave.",
     "u": 2,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "The Westner",
     "a": "4618 N. Western Ave",
     "u": 2,
-    "y": "2016",
-    "m": "spatial"
+    "y": null,
+    "m": "none",
+    "k": null
    },
    {
     "n": "4646 Damen Apts.",
     "a": "4646 N. Damen Ave",
     "u": 2,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    }
   ],
   "48": [
@@ -2014,42 +2236,48 @@
     "a": "5009 N. Sheridan Road",
     "u": 16,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "The Sally",
     "a": "1131 W. Winona St.",
     "u": 9,
     "y": "2022",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Sally",
     "a": "1135 W. Winona St.",
     "u": 8,
     "y": "2021",
-    "m": "exact"
+    "m": "exact",
+    "k": "new"
    },
    {
     "n": "The Synagogue",
     "a": "5029 N. Kenmore Ave",
     "u": 4,
-    "y": null,
-    "m": "none"
+    "y": "2017",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Glenlake LLC",
     "a": "1544 W. Glenlake Ave",
     "u": 3,
     "y": null,
-    "m": "none"
+    "m": "none",
+    "k": null
    },
    {
     "n": "The Mabel Exchange",
     "a": "5920 N Ridge Ave.",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2025",
+    "m": "exact",
+    "k": "conversion"
    }
   ],
   "49": [
@@ -2057,8 +2285,9 @@
     "n": "1730 W. Greenleaf",
     "a": "1730 W. Greenleaf Ave",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2018",
+    "m": "exact",
+    "k": "conversion"
    }
   ],
   "50": [
@@ -2066,8 +2295,9 @@
     "n": "6411 N. Rockwell Ave",
     "a": "6411 N. Rockwell Ave",
     "u": 3,
-    "y": null,
-    "m": "none"
+    "y": "2011",
+    "m": "exact",
+    "k": "conversion"
    }
   ]
  }
