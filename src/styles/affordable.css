@@ -1,0 +1,172 @@
+/* Affordable Units — layers on top of permitting.css, which supplies the
+   page frame, controls, map overlay and table. Only what differs lives here. */
+
+/* Two charts side by side: separate measures, separate scales, never one
+   plot with two y-axes. */
+
+.af-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.af-chart {
+  margin: 0;
+  border: 1px solid var(--rule);
+  padding: 16px 20px 12px;
+  min-width: 0;
+}
+
+.af-chart figcaption {
+  margin-bottom: 12px;
+}
+
+.af-chart figcaption h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.af-chart figcaption p {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 3px;
+}
+
+.af-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 104px;
+}
+
+.af-bar-slot {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+/* Out-of-range years stay visible but recede, so the shape of the whole
+   record is never hidden by the year filter. */
+.af-bar {
+  width: 100%;
+  background: var(--rule);
+  border-radius: 3px 3px 0 0;
+  transition: background 0.15s ease;
+}
+
+.af-bar.in {
+  background: #0d96c9;
+}
+
+.af-bar.share.in {
+  background: #00718f;
+}
+
+.af-bar:hover {
+  background: var(--highlight);
+}
+
+.af-axis {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 7px;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.af-axis-note {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.af-footnote {
+  margin-top: 8px;
+}
+
+/* AMI depth */
+
+.af-ami {
+  margin-top: 30px;
+  border: 1px solid var(--rule);
+  background: var(--surface-2);
+  padding: 20px 24px 22px;
+}
+
+.af-ami-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.af-ami-lede {
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 5px;
+  max-width: 620px;
+}
+
+.af-ami-rows {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.af-ami-row {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr) 128px;
+  align-items: center;
+  gap: 14px;
+}
+
+.af-ami-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.af-ami-track {
+  height: 15px;
+  background: var(--ground);
+  border: 1px solid var(--rule-soft);
+}
+
+.af-ami-fill {
+  height: 100%;
+  background: #0d96c9;
+  min-width: 2px;
+}
+
+.af-ami-value {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.af-ami-pct {
+  color: var(--muted);
+  min-width: 34px;
+  text-align: right;
+}
+
+@media (max-width: 980px) {
+  .af-charts {
+    grid-template-columns: 1fr;
+  }
+  .af-ami-row {
+    grid-template-columns: 68px minmax(0, 1fr) 104px;
+    gap: 10px;
+  }
+}

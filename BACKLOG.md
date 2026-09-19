@@ -35,24 +35,36 @@ be designed to show the two series separately.
 | DOH ARO project lists (PDF, chicago.gov) | Per project: on-site units vs in-lieu fee, by address | PDF wrangling. No portal dataset for ARO exists. |
 | `p293-wvbd` wards | Point-in-polygon to current wards, same as permits | — |
 
-**Phases.** (Flow from the start — see the external request below for why
-the undated directory is not a first version.)
+**Phases.**
 
-1. **LIHTC.** Pull HUD's database, keep the Chicago subset, place each
-   property in a ward by coordinates, and build units added per ward per year
-   from placed-in-service dates. Proves the pipeline on the cleanest source.
-   Ship the scatter against market-rate permits first and let it show whether
-   the split is real before designing the map around it.
-2. **ARO.** The directory's ARO entries, dated by address match to our
-   new-construction permits. Report the match rate honestly.
-3. **Supportive housing.** Mostly a filter on what is already loaded, dated
-   the same two ways.
-4. **CHA.** Hand-entered from Moving to Work reports, *net* of removals.
-5. **The ARO mechanism (stretch).** From DOH's project lists, map projects that
-   paid the in-lieu fee against where fee-funded units were built. This is the
-   actual mechanism behind the hunch — high-market wards paying instead of
-   building, fees funding units elsewhere — and would be the headline chart.
-   Effort unknown until the PDFs are inspected.
+1. ~~**ARO.**~~ **Shipped** as `/affordable`. Source is the ArcGIS feature
+   service behind the city's ARO map page, which is *not* on the data portal
+   and is far better than `s6ha-ppgi`: refreshed 2026-02, with ward, unit
+   counts and AMI tiers. It carries no date, so buildings are dated by
+   matching to the nearest new-construction permit within 75 m (93% of units).
+   Importer: `scripts/import_aro.py`.
+2. **In-lieu fees — the missing half of the ARO story.** Developers may pay
+   instead of building, and nothing published so far quantifies that by year
+   or by ward. Until it exists the page understates how the ordinance
+   actually works, and says so. Leads: DOH reporting, the Chicago Housing
+   Trust, the OIG's ARO administration audit. **Note:** the fee schedule
+   quoted in secondary sources (roughly $100k–225k per unit) could not be
+   confirmed from the February 2024 ARO Rules PDF, whose text layer did not
+   yield a fee table. Do not publish a fee figure without a primary citation.
+   Worth stating clearly when we have it: the fee is set well below what it
+   costs to actually produce a unit in Chicago, which is why paying is
+   attractive.
+3. **LIHTC.** HUD's database: 518 Chicago properties, 42,576 low-income
+   units, but placed-in-service records stop in 2020 and allocation years
+   stop in 2018, so it cannot answer "units added" for recent years. IHDA,
+   the state allocator, is the lead for closing that gap; its developer
+   pages 404'd on first attempt and need a real look.
+4. **Supportive housing.** `MULTIFAMILY_PROPERTIES_ASSISTED`: 330 Chicago
+   properties, 30,572 assisted units of 38,643 total, current to 2026-07,
+   with a client-group field separating elderly, disabled and family.
+5. **CHA.** `Public_Housing_Developments` filtered to `PARTICIPANT_CODE='IL002'`:
+   103 developments, 19,651 units, current to 2026-07. No year-added field.
+   Show *net* of removals or not at all.
 
 The directory (`s6ha-ppgi`) remains useful as a cross-check on coverage and
 as a secondary stock view, normalised per 1,000 households.
@@ -90,10 +102,20 @@ confidential for safety. Scope this separately, last.
 filter on data already loaded) → CHA (after the net-vs-gross decision) →
 shelters, if at all.
 
-**Decide before starting:** whether the directory's `units` is restricted
-units or the whole building for mixed-income developments; normalisation
-(raw, per 1,000 households, or affordable as a share of all units permitted
-in the ward — the last is the most quotable).
+**Resolved.** The directory's `units` field is *inconsistent*: across 35
+mixed-income buildings matched to HUD records, it equalled HUD's total unit
+count in 9 cases, HUD's assisted count in 2, and neither in 24. It cannot
+carry a headline number without per-row reconciliation, which is another
+reason the ARO page uses the DOH service instead. Normalisation settled as
+"ARO units as a share of all new units permitted in the ward", which is the
+most quotable framing and is what `/affordable` shows.
+
+**Overlap, measured.** Matching on coordinates within 60 m: 43% of LIHTC
+properties appear in the city directory, 22% of HUD-assisted properties do,
+and 18% of LIHTC properties are also HUD-assisted. 385 of 598 city entries
+match neither federal set, of which 152 are ARO. So the deduplicated
+universe is roughly 60,000–70,000 income-restricted rental units, not the
+~120,000 a naive sum would give.
 
 ## 2. Deconversions and demolitions
 
