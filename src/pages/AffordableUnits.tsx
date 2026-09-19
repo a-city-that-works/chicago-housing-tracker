@@ -189,6 +189,12 @@ export function AffordableUnits() {
             Download CSV
           </button>
         </div>
+        <p className="af-caveat">
+          A further {(aro.meta.units - aro.meta.datedUnits).toLocaleString()} ARO units in{" "}
+          {aro.meta.undatedBuildings} buildings could not be dated to a construction permit and
+          are excluded from every figure here. They are mostly rehabs and loft conversions, which
+          never had a new-construction permit to match against.
+        </p>
       </section>
 
       {/* Two measures on different scales get two charts, never two y-axes. */}
@@ -197,7 +203,8 @@ export function AffordableUnits() {
           <figcaption>
             <h2>ARO units by year</h2>
             <p>
-              Dated by the building&rsquo;s new-construction permit. Hover a bar for the count.
+              Covers the {aro.meta.datedUnits.toLocaleString()} units whose building could be
+              dated from a permit. Hover a bar for the count.
             </p>
           </figcaption>
           <div className="af-bars" role="img" aria-label="ARO units permitted per year">
@@ -403,13 +410,16 @@ export function AffordableUnits() {
         address where the street and house number agree within{" "}
         {aro.meta.addrTolerance} ({aro.meta.matchMethods.exact + aro.meta.matchMethods.address}{" "}
         buildings), and on coordinates within {aro.meta.matchMetres} metres only where no address
-        matched ({aro.meta.matchMethods.spatial}). Address matching is the more reliable of the
-        two: where both applied they agreed on the year in 113 of 116 cases, and every
-        disagreement was the coordinate match landing on a neighbouring parcel. Dating succeeds
-        for {Math.round(aro.meta.datedShare * 100)}% of units; the {aro.meta.undatedBuildings}{" "}
-        buildings that fail are mostly conversions of existing structures, which never had a
-        new-construction permit. Wards are recomputed on current (2023) boundaries, as on the
-        Permitting Map. Two important exclusions: this covers rental
+        matched ({aro.meta.matchMethods.spatial}). Every candidate permit must also plausibly be a
+        residential building big enough to hold the ARO units, which matters more than it sounds:
+        without that test the earliest permit on a parcel is often a tower crane, a foundation
+        filing or a temporary event tent rather than the building itself. Dating succeeds for{" "}
+        {Math.round(aro.meta.datedShare * 100)}% of units. The {aro.meta.undatedBuildings}{" "}
+        buildings left undated are mostly rehabs and loft conversions, which never had a
+        new-construction permit. Because every figure on this page is filtered by year, those
+        buildings are excluded throughout, so the totals here run below the{" "}
+        {aro.meta.units.toLocaleString()} units in the full source. Wards are recomputed on
+        current (2023) boundaries, as on the Permitting Map. Two important exclusions: this covers rental
         ARO units only, not for-sale units, and it does not capture units that developers chose
         not to build by paying the ordinance&rsquo;s in-lieu fee instead — a substantial share of
         how the ARO operates in practice.

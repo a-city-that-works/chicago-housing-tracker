@@ -21,13 +21,30 @@ Two corrections do the work:
               lots and buildings permitted under one of several addresses)
      spatial  nearest permit within 75 m, as a last resort
 
-   Address beats coordinates where both fire: of 116 buildings matched both
-   ways, they agreed on the year 113 times, and all three disagreements were
-   the spatial match landing on a neighbouring parcel. Tiering this way dates
-   190 of 206 buildings with 177 on an address rather than a guess, against
-   187 on coordinates alone. The method is recorded per building so the page
-   can be honest about it. Buildings that are conversions of existing
-   structures have no new-construction permit and stay undated by design.
+   Every candidate must first pass a plausibility gate, because proximity and
+   even a shared address say nothing about whether the permit is a building.
+   Ungated, this produced nonsense: Elm Street Plaza's 34 ARO units were dated
+   from a temporary tent permit for a New Year's Eve party, Axis Apartments
+   from an event canopy, The Mabel Exchange from a carwash, 4801 N Ravenswood
+   from the Metra station foundation, and 50 of 177 address matches picked a
+   tower crane or a foundation-only filing because those are simply the
+   earliest permit on the parcel.
+
+   The gate rejects anything that is not a building (tents, canopies, cranes,
+   hoists, scaffolds, signs, demolitions), rejects single-family permits for
+   buildings owing more than one ARO unit, and rejects any permit whose own
+   stated unit count is smaller than the ARO obligation. Note that it cannot
+   reuse classify() from the permit importer: that deliberately calls
+   foundation-only permits non-residential to avoid double-counting units, but
+   a foundation permit for a 267-apartment project is a perfectly good date.
+
+   Candidates are then ranked: exact address over near address, larger
+   building over smaller, earlier permit over later.
+
+   The gate costs coverage and is worth it. A wrong year is worse than no
+   year, and buildings that fail are mostly rehabs and loft conversions that
+   never had a new-construction permit at all. The method is recorded per
+   building so the page can report it.
 
 2. THE WARD FIELD IS UNDATED TOO. It is whatever was current when the row was
    written, so wards are recomputed by point-in-polygon against the current
@@ -65,14 +82,43 @@ OUT = "src/data/aro.json"
 # Last-resort match radius. 40 m dates only 74% of buildings; 150 m starts
 # picking up the building next door. 75 m is the usable middle.
 MATCH_M = 75
-# House-number slack for an address match, in street-number units.
+# House-number slack for an address match, in street-number units. Chicago
+# numbers run 100 to the block, so this stays on the block face.
 ADDR_TOLERANCE = 25
+
+# Things that are emphatically not the building the ARO units are in.
+NOT_A_BUILDING = re.compile(
+    r"\bTENT\b|\bCANOPY\b|\bTEMPORARY\b|\bBLEACHER\b|\bSTAGE\b|\bTRUSS\b|\bSIGN\b|"
+    r"\bFENCE\b|\bSHED\b|\bANTENNA\b|\bSWIMMING POOL\b|\bPARKING LOT\b|\bGREENHOUSE\b|"
+    r"\bCRANE\b|\bHOIST\b|\bSCAFFOLD\b|\bSIDEWALK\b|\bWRECK\b|\bDEMOLITION\b|"
+    r"\bCAR ?WASH\b|\bSTATION\b")
+RESIDENTIAL = re.compile(
+    r"\bDWELLING\b|\bAPARTMENT|\bRESIDEN|\bD\.?\s?U\.?\b|\bCONDO|\bUNITS?\b")
 
 SUFFIXES = {
     "AVENUE": "AVE", "STREET": "ST", "BOULEVARD": "BLVD", "DRIVE": "DR",
     "PLACE": "PL", "ROAD": "RD", "COURT": "CT", "TERRACE": "TER",
     "PARKWAY": "PKWY", "PLAZA": "PLZ", "SQUARE": "SQ", "LANE": "LN",
 }
+
+
+def plausible(permit, need, classifier):
+    """
+    Unit count if this permit could be the building holding `need` ARO units,
+    else None. `classifier` is the permit importer's module, reused for its
+    regexes and unit extraction.
+    """
+    t = (permit.get("work_description") or "").upper()
+    if NOT_A_BUILDING.search(t) or classifier.REVISION.search(t):
+        return None
+    if classifier.SFR.search(t) and need > 1:
+        return None
+    n = classifier.extract_units(t)
+    if n is not None and n < need:
+        return None
+    if n is None and not RESIDENTIAL.search(t):
+        return None
+    return n or 0
 
 
 def street_key(number, rest):
@@ -128,9 +174,21 @@ def fetch_aro():
     return out
 
 
+def load_classifier():
+    """The permit importer's regexes and unit extraction, reused not copied."""
+    import importlib.util
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "import_permits.py")
+    spec = importlib.util.spec_from_file_location("import_permits", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def main():
     from shapely.geometry import shape, Point
     from shapely.strtree import STRtree
+
+    cls = load_classifier()
 
     buildings = fetch_aro()
     total_units = sum(int(b["ARO_Units"] or 0) for b in buildings)
@@ -166,26 +224,33 @@ def main():
         if k:
             by_street[k[1]].append((k[0], p))
 
-    def match_by_address(match_addr):
-        """Exact first, then the same street within ADDR_TOLERANCE."""
+    def match_by_address(match_addr, need):
+        """Best plausible permit on the address: exact, then bigger, then earlier."""
         head = (match_addr or "").split(",")[0].strip()
         m = re.match(r"^(\d+)\s+(.*)$", head)
         if not m:
             return None
-        num, street = street_key(m.group(1), m.group(2)) or (None, None)
-        if num is None:
+        key = street_key(m.group(1), m.group(2))
+        if key is None:
             return None
-        near = [(abs(n - num), p) for n, p in by_street.get(street, [])
-                if abs(n - num) <= ADDR_TOLERANCE]
-        if not near:
+        num, street = key
+        best = None
+        for n, p in by_street.get(street, []):
+            gap = abs(n - num)
+            if gap > ADDR_TOLERANCE:
+                continue
+            units = plausible(p, need, cls)
+            if units is None:
+                continue
+            rank = (0 if gap == 0 else 1, -units, p["issue_date"])
+            if best is None or rank < best[0]:
+                best = (rank, p, gap)
+        if not best:
             return None
-        exact = [p for gap, p in near if gap == 0]
-        pool = exact or [p for _, p in near]
-        # earliest permit on the parcel is the original build; later ones are
-        # staged filings or alterations
-        return ("exact" if exact else "address", min(pool, key=lambda p: p["issue_date"]))
+        return ("exact" if best[2] == 0 else "address", best[1])
 
-    def nearest_permit(lat, lon):
+    def nearest_permit(lat, lon, need):
+        """Nearest plausible permit — proximity alone is not evidence."""
         best = None
         kla, klo = round(lat, 3), round(lon, 3)
         for dla in (-1, 0, 1):
@@ -194,7 +259,8 @@ def main():
                                            round(klo + dlo * 0.001, 3)), []):
                     d = haversine(lat, lon, la, lo)
                     if d <= MATCH_M and (best is None or d < best[0]):
-                        best = (d, p)
+                        if plausible(p, need, cls) is not None:
+                            best = (d, p)
         return best
 
     by_ward = collections.defaultdict(lambda: {
@@ -221,9 +287,9 @@ def main():
         for t in AMI_TIERS:
             rec[t] += int(b[t] or 0)
 
-        found = match_by_address(b.get("Match_addr"))
+        found = match_by_address(b.get("Match_addr"), units)
         if not found:
-            hit = nearest_permit(b["lat"], b["lon"])
+            hit = nearest_permit(b["lat"], b["lon"], units)
             found = ("spatial", hit[1]) if hit else None
 
         year, how = None, "none"
@@ -252,7 +318,8 @@ def main():
     print(f"    by exact address:     {methods['exact']}")
     print(f"    by address ±{ADDR_TOLERANCE}:      {methods['address']}")
     print(f"    by coordinates only:  {methods['spatial']}")
-    print(f"  undated (no new-construction permit — likely conversions): {len(undated)}")
+    print(f"  undated (no plausible new-construction permit — mostly rehabs "
+          f"and conversions): {len(undated)}")
 
     payload = {
         "meta": {
@@ -272,7 +339,9 @@ def main():
                      "bought out through in-lieu fees. Years are the issue year of the "
                      "nearest new-construction permit, not a field in the source. "
                      "Buildings are matched to that permit by address where possible "
-                     "and by coordinates only as a fallback."),
+                     "and by coordinates only as a fallback, and every candidate "
+                     "must plausibly be a residential building large enough to "
+                     "contain the ARO units."),
         },
         "amiTiers": [t.replace("ARO_", "") for t in AMI_TIERS],
         "byWard": {str(w): by_ward[w] for w in sorted(by_ward)},
