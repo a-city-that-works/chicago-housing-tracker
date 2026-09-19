@@ -1,10 +1,15 @@
 {
  "meta": {
-  "source": "Chicago Building Permits (ydr8-5enu), PERMIT - NEW CONSTRUCTION plus renovation-typed permits describing new construction",
+  "source": "Chicago Building Permits (ydr8-5enu)",
   "firstYear": 2010,
   "lastYear": 2026,
   "lastDate": "2026-09-18",
   "permits": 25618,
+  "permitsFetched": 53022,
+  "permitTypes": [
+   "PERMIT - NEW CONSTRUCTION",
+   "PERMIT - RENOVATION/ALTERATION"
+  ],
   "unclassifiedShare": 0.1512,
   "note": "Gross new construction only \u2014 excludes conversions, deconversions and demolitions. Top-level tables key on current (2023) ward boundaries for every year; atIssue keys on the ward as stated on the permit."
  },

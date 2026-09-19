@@ -368,6 +368,10 @@
   max-width: 900px;
 }
 
+.pm-method p + p {
+  margin-top: 11px;
+}
+
 @media (max-width: 900px) {
   .permitting {
     padding: 36px 20px 24px;

@@ -437,12 +437,14 @@ def main():
     years = sorted({rec[0][:4] for rec in kept})
     payload = {
         "meta": {
-            "source": ("Chicago Building Permits (ydr8-5enu), PERMIT - NEW CONSTRUCTION "
-                       "plus renovation-typed permits describing new construction"),
+            "source": "Chicago Building Permits (ydr8-5enu)",
             "firstYear": int(years[0]),
             "lastYear": int(years[-1]),
             "lastDate": last_date,
             "permits": len(newbuild),
+            # every permit pulled, new construction and renovation together
+            "permitsFetched": len(rows),
+            "permitTypes": ["PERMIT - NEW CONSTRUCTION", "PERMIT - RENOVATION/ALTERATION"],
             "unclassifiedShare": round(cats["unclear"] / len(newbuild), 4),
             "note": ("Gross new construction only — excludes conversions, "
                      "deconversions and demolitions. Top-level tables key on "

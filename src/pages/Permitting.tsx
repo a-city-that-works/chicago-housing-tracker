@@ -404,32 +404,36 @@ export function Permitting() {
         </div>
       </section>
 
-      <p className="pm-method">
-        Gross new construction units per ward. This map extracts unit counts from the city&rsquo;s
-        dataset on building permits. It covers permits typed as new construction, plus permits
-        typed as renovations whose own description is of a new building &mdash; Chicago files some
-        towers that way, and leaving them out understated whole years. Conversions of existing
-        buildings are still excluded. Unit counts are
-        extracted from each permit&rsquo;s work description, since the source dataset has no
-        unit-count field; note that these figures are not exact, as about{" "}
-        {Math.round(data.meta.unclassifiedShare * 100)}% of permits could not be classified (and are
-        ignored). Permits staged across several filings for one project are counted once. Ward
-        boundaries were redrawn in 2015 and 2023: by default every permit is placed on today&rsquo;s
-        map by its coordinates, while the &ldquo;at time of permit&rdquo; view keeps the ward number
-        recorded on the permit itself &mdash; the two differ on about a fifth of permits.{" "}
-        <strong>Including conversions</strong> adds units created by turning existing buildings
-        into housing and subtracts units lost when a building is deconverted into fewer, larger
-        homes. Only permits that state the change plainly are counted, so this is a floor.{" "}
-        <strong>It is not a net figure: demolitions are excluded.</strong> Around 14,000
-        demolition permits since 2010 describe a residential building without saying how many
-        homes it held, so the units lost that way cannot be recovered from this dataset and are
-        left out entirely rather than guessed at. Source:{" "}
-        <a href={PERMITS_DATASET_URL} target="_blank" rel="noreferrer">
-          Chicago Building Permits (ydr8-5enu)
-        </a>
-        , PERMIT - NEW CONSTRUCTION,{" "}
-        {data.meta.permits.toLocaleString()} permits from {FIRST} to {data.meta.lastDate}.
-      </p>
+      <div className="pm-method">
+        <p>
+          Gross new construction units per ward. This map extracts unit counts from the
+          city&rsquo;s dataset on building permits. It covers permits typed as new construction,
+          plus permits typed as renovations whose own description is of a new building.
+          Conversions of existing buildings are excluded unless toggled on. Unit counts are
+          extracted from each permit&rsquo;s work description, since the source dataset has no
+          unit-count field; note that these figures are not exact, as about{" "}
+          {Math.round(data.meta.unclassifiedShare * 100)}% of permits could not be classified
+          (and are ignored). Permits staged across several filings for one project are counted
+          once. Ward boundaries were redrawn in 2015 and 2023: by default every permit is placed
+          on today&rsquo;s map by its coordinates, while the &ldquo;at time of permit&rdquo; view
+          keeps the ward number recorded on the permit itself.
+        </p>
+        <p>
+          Including conversions adds units created by turning existing buildings into housing and
+          subtracts units lost when a building is deconverted into fewer, larger homes. Only
+          permits that state the change plainly are counted. Note that this does not give us a
+          true &lsquo;net&rsquo; figure, as demolitions are excluded.
+        </p>
+        <p>
+          Source:{" "}
+          <a href={PERMITS_DATASET_URL} target="_blank" rel="noreferrer">
+            Chicago Building Permits (ydr8-5enu)
+          </a>
+          , {data.meta.permitTypes.join(" and ")},{" "}
+          {data.meta.permitsFetched.toLocaleString()} permits from {FIRST} to{" "}
+          {data.meta.lastDate}.
+        </p>
+      </div>
     </div>
   );
 }

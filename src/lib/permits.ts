@@ -42,6 +42,9 @@ export interface PermitsData extends PermitTables {
     lastYear: number;
     lastDate: string;
     permits: number;
+    /** Every permit pulled, new construction and renovation together. */
+    permitsFetched: number;
+    permitTypes: string[];
     unclassifiedShare: number;
     note: string;
   };
