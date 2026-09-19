@@ -128,14 +128,35 @@ PERMIT FOR PROPOSED NEW 12 STORY RESIDENTIAL"), and the unit extractor only
 understood "units" and "D.U.", not "apartments". Both are fixed in
 `scripts/import_permits.py`; the citywide total moved from 89,420 to 92,142.
 
-**Still open: conversions.** An existing building becoming housing — the
-Duncan's YMCA into 320 apartments — is real supply but is not new
-construction, and the permitting page excludes it by design. Sizing it needs
-care: a renovation permit saying "alterations to existing 21 unit building"
-states units that *already exist*, so naively summing renovation permits with
-unit counts gives a six-figure nonsense number. The honest approach isolates
-language like "to provide 320 new apartments". Decide whether it belongs as
-its own series before measuring.
+**Still open: conversions.** Measured, not yet shipped. A net-units extractor
+over renovation permits finds four parseable patterns:
+
+| Pattern | Permits | Net units |
+|---|---|---|
+| Adaptive reuse (non-residential building to housing) | 114 | +2,694 |
+| Explicit addition ("to provide 320 new apartments") | 88 | +657 |
+| Before/after ("convert 5 D.U. to 6 D.U.") | 1,163 | −302 |
+| Deconversion to single family | 516 | −632 |
+| **Net** | **1,881** | **+2,417** |
+
+Gains +4,098, losses −1,681, over 2010–2026. Concentrated recently: 2019
++620, 2025 +630, which is the LaSalle Street office-to-residential wave. Every
+gain of 25 units or more was reviewed by hand and is correct — a 24-storey
+office converting floors 4–24, a nursing home to 160 units, a parking garage
+to 72, the Duncan's YMCA to 320.
+
+Order of tests matters: check for deconversion wording *first*, or
+"deconversion of 3 dwelling units to original 2" reads as +3. Exclude a hotel
+as the *result*, since hotel rooms are not dwelling units.
+
+**These are floors, not totals.** Only permits with explicit parseable
+language are caught; a conversion that never states a count is invisible.
+Demolition losses are not in here at all — that is item 2.
+
+**Why it matters for ARO.** `/affordable` counts ARO units in conversions
+(currently 307 of 1,995) but expresses them as a share of a denominator that
+excludes conversions, because `permits.json` is new construction only. That
+comparison is inconsistent today. Adding a conversions series fixes it.
 
 ## 2. Deconversions and demolitions
 
