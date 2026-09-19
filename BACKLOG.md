@@ -89,11 +89,44 @@ Design consequence: one tab, *program* as a dimension. Map with program
 filters (LIHTC, ARO, CHA, supportive), the scatter grouped market-linked vs
 subsidized, one table.
 
-**Overlap rule, before any counting.** One building can be LIHTC-financed,
+**Overlap rule — decided 2026-09.** One building can be LIHTC-financed,
 CHA-owned and supportive housing at once — most Plan for Transformation sites
-are — so summing programs double- or triple-counts. Assign each development
-one primary program by a stated precedence (proposed: CHA > supportive >
-LIHTC > ARO) and note the overlap.
+are — so summing programs double- or triple-counts. Every development
+therefore stores **all** its programs, plus a derived primary by precedence
+(CHA > supportive > LIHTC > ARO, deepest subsidy wins the label). The two
+views then answer different questions:
+
+- **Unfiltered — attribution.** Each unit counted once, under its primary
+  program. Totals are honest and reconcile to the deduplicated universe.
+- **Filtered to a program — membership.** Every unit participating in that
+  program, whatever else it participates in. A supportive + LIHTC building
+  appears under LIHTC when supportive is filtered out.
+
+**Consequence to design around: filtered figures do not sum to the unfiltered
+total.** LIHTC-only plus supportive-only exceeds the combined figure, because
+the overlap is in both. That is correct, but it forbids any chart implying
+additivity — no stacked bars of program totals, no pie. Selecting two programs
+must take the deduplicated union, not the sum. Say so on the page.
+
+**Page structure — decided 2026-09.** The shipped `/affordable` tab, which is
+entirely ARO, gets absorbed. The destination is one affordable-housing section
+with **stock** and **flow** sub-tabs covering every program, ARO among them.
+
+**Stock and flow are not equally available, and the sub-tabs must not promise
+symmetry they cannot deliver:**
+
+| Program | Stock | Flow |
+|---|---|---|
+| ARO | yes | **yes**, via permit matching, 92% of units dated |
+| LIHTC | 42,576 units | placed-in-service records **stop in 2020** |
+| HUD project-based | 30,572 units | no date field |
+| CHA public housing | 19,651 units | no year-added field |
+| City-financed | partial | no |
+
+The technique that worked for ARO — take an undated stock list and date it
+against construction permits by address — is the obvious thing to try on the
+rest, and should work about as well, since these are also buildings that
+pulled permits.
 
 **Shelters are a separate section, not a layer.** Different department
 (DFSS), measured in beds not units, no year-added, and the most contested
