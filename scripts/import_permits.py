@@ -133,10 +133,15 @@ HOTEL_RESULT = re.compile(r"(?:INTO|TO)\s+(?:A\s+)?(?:NEW\s+)?(?:BOUTIQUE\s+)?(?
 CONVERTS_TO = re.compile(rf"CONVER\w+[^.]{{0,120}}?{_N}[- ]?{_U}")
 
 
-def net_conversion(desc):
+def conversion_units(desc):
     """
-    Net dwelling units created (+) or lost (-) by converting an existing
-    building, or None where the permit does not say plainly enough to tell.
+    (units before, units after) for a building being converted, or None where
+    the permit does not say plainly enough to tell.
+
+    Returning both sides rather than just the net is what lets a conversion be
+    filed under SFH or MFH the same way new construction is: a two-flat
+    becoming one house takes 2 out of the multi-family column and puts 1 into
+    single-family, which is a different statement from "net -1".
     """
     t = (desc or "").upper()
     if REVISION.search(t):
@@ -146,7 +151,7 @@ def net_conversion(desc):
     if m:
         a, b = int(m.group(1)), int(m.group(2))
         if 0 < a <= 500 and 0 < b <= 500:
-            return b - a
+            return a, b
 
     # deconversion wording must be handled before any gain pattern, or
     # "deconversion of 3 dwelling units to original 2" scores +3
@@ -155,7 +160,7 @@ def net_conversion(desc):
     if m and (decon or SFR.search(t)):
         a = int(m.group(1))
         if 1 < a <= 20:
-            return 1 - a
+            return a, 1
     if decon:
         return None
 
@@ -164,18 +169,23 @@ def net_conversion(desc):
         n = int(m.group(1))
         if 0 < n <= 500:
             prior = PRIOR_COUNT.search(t)
-            if prior and not ADD_VERB.search(t) and not ADDS_NEW.search(t):
-                # "to create N" alongside an existing count means N is the total
+            if prior:
                 p = int(prior.group(1) or prior.group(2))
-                return n - p if 0 < p <= 500 else None
-            return n
+                if not 0 < p <= 500:
+                    return None
+                # "to create N" alongside an existing count means N is the
+                # total; "add N" means N on top of it
+                return (p, n) if not ADD_VERB.search(t) and not ADDS_NEW.search(t) else (p, p + n)
+            # no stated prior: units added to a building with none of its own
+            return 0, n
 
     if NONRES_SOURCE.search(t) and not EXISTING.search(t) and not HOTEL_RESULT.search(t):
         m = CONVERTS_TO.search(t)
         if m:
             n = int(m.group(1))
             if 0 < n <= 2000:
-                return n
+                # the building was not housing before, so all of it is new
+                return 0, n
     return None
 
 
@@ -400,38 +410,58 @@ def main():
     print(f"  stated ward differs from current ward on {moved:,} of {len(kept):,} "
           f"permits ({moved / len(kept) * 100:.1f}%)")
 
-    # ---- conversions, kept as their own series ---------------------------
+    # ---- conversions -----------------------------------------------------
+    # Units move between the single-family and multi-family columns rather
+    # than sitting in a bucket of their own, so a two-flat becoming one house
+    # reads as -2 multi-family and +1 single-family.
     crecs = []
     for r in convrows:
-        n = net_conversion(r.get("work_description"))
-        if not n:
+        ba = conversion_units(r.get("work_description"))
+        if not ba or ba[0] == ba[1]:
             continue
+        before, after = ba
         a = " ".join(str(r.get(f) or "").strip().upper()
                      for f in ("street_number", "street_direction", "street_name"))
-        crecs.append((r.get("issue_date", "")[:10], current_ward(r), n, a))
+        crecs.append((r.get("issue_date", "")[:10], current_ward(r), stated_ward(r),
+                      before, after, a))
     crecs.sort(key=lambda x: x[0])
-    cseen, ckept = {}, 0
-    gained = collections.defaultdict(lambda: collections.defaultdict(int))
-    lost = collections.defaultdict(lambda: collections.defaultdict(int))
-    for date, w, n, a in crecs:
-        k = (a, n)
-        prev = cseen.get(k)
-        if prev and (datetime.date.fromisoformat(date)
-                     - datetime.date.fromisoformat(prev)).days <= 730:
-            continue
-        cseen[k] = date
-        if w is None:
-            continue
-        ckept += 1
-        y = date[:4]
-        if n > 0:
-            gained[w][y] += n
-        else:
-            lost[w][y] += -n
-    tg = sum(sum(v.values()) for v in gained.values())
-    tl = sum(sum(v.values()) for v in lost.values())
-    print(f"  conversions: {ckept:,} permits, +{tg:,} units gained, "
-          f"-{tl:,} lost, net {tg - tl:+,}")
+
+    def conv_tables(ward_index):
+        seen = {}
+        sfh = collections.defaultdict(lambda: collections.defaultdict(int))
+        mfh = collections.defaultdict(lambda: collections.defaultdict(int))
+        kept_n = 0
+        for rec in crecs:
+            date, before, after, a = rec[0], rec[3], rec[4], rec[5]
+            k = (a, before, after)
+            prev = seen.get(k)
+            if prev and (datetime.date.fromisoformat(date)
+                         - datetime.date.fromisoformat(prev)).days <= 730:
+                continue
+            seen[k] = date
+            w = rec[ward_index]
+            if w is None:
+                continue
+            kept_n += 1
+            y = date[:4]
+            # a building leaves the column its old size put it in and joins
+            # the one its new size puts it in
+            if before == 1:
+                sfh[w][y] -= before
+            elif before > 1:
+                mfh[w][y] -= before
+            if after == 1:
+                sfh[w][y] += after
+            elif after > 1:
+                mfh[w][y] += after
+        return sfh, mfh, kept_n
+
+    conv_sfh, conv_mfh, ckept = conv_tables(1)
+    ai_sfh, ai_mfh, _ = conv_tables(2)
+    ts = sum(sum(v.values()) for v in conv_sfh.values())
+    tm = sum(sum(v.values()) for v in conv_mfh.values())
+    print(f"  conversions: {ckept:,} permits, single-family {ts:+,}, "
+          f"multi-family {tm:+,}, net {ts + tm:+,}")
 
     last_date = max(rec[0] for rec in kept)
     years = sorted({rec[0][:4] for rec in kept})
@@ -453,12 +483,19 @@ def main():
         },
         "projectMinUnits": PROJECT_MIN_UNITS,
         "conversions": {
-            "note": ("Net dwelling units created or lost by converting existing "
-                     "buildings, where the permit says so plainly. A floor, not a "
-                     "total: conversions that state no unit count are invisible, "
-                     "and demolitions are not counted here."),
-            "gained": {str(w): dict(gained[w]) for w in sorted(gained)},
-            "lost": {str(w): dict(lost[w]) for w in sorted(lost)},
+            "note": ("Dwelling units created or lost by converting existing "
+                     "buildings, where the permit says so plainly, split the same "
+                     "way new construction is: a building counts under SFH at one "
+                     "unit and MFH at two or more, so a conversion moves units "
+                     "between the two columns. A floor, not a total: conversions "
+                     "that state no unit count are invisible, and demolitions are "
+                     "not counted here."),
+            "sfh": {str(w): dict(conv_sfh[w]) for w in sorted(conv_sfh)},
+            "mfh": {str(w): dict(conv_mfh[w]) for w in sorted(conv_mfh)},
+            "atIssue": {
+                "sfh": {str(w): dict(ai_sfh[w]) for w in sorted(ai_sfh)},
+                "mfh": {str(w): dict(ai_mfh[w]) for w in sorted(ai_mfh)},
+            },
         },
         **tables(current),
         "atIssue": tables(at_issue),

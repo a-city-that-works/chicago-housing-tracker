@@ -24,9 +24,7 @@ const CYCLE_START = 2023;
 const PERMITS_DATASET_URL = "https://data.cityofchicago.org/Buildings/Building-Permits/ydr8-5enu";
 
 /** Columns the table can be sorted on. */
-type SortKey =
-  | "rank" | "ward" | "units" | "sfh" | "mfh" | "mfhShare" | "perYear"
-  | "convGained" | "convLost";
+type SortKey = "rank" | "ward" | "units" | "sfh" | "mfh" | "mfhShare" | "perYear";
 
 export function Permitting() {
   const [from, setFrom] = useState(CYCLE_START);
@@ -45,8 +43,7 @@ export function Permitting() {
     [from, to, basis, mode]
   );
   const atIssue = basis === "atIssue";
-  // Conversions are only tabulated on current boundaries.
-  const withConv = mode === "withConversions" && !atIssue;
+  const withConv = mode === "withConversions";
   const trend = useMemo(() => yearlyTotals(data, withConv ? "withConversions" : "new"), [withConv]);
   const maxTrend = Math.max(...trend.map((t) => t.units));
 
@@ -218,7 +215,6 @@ export function Permitting() {
                   key={m}
                   type="button"
                   className={mode === m ? "pm-tog on" : "pm-tog"}
-                  disabled={atIssue && m === "withConversions"}
                   onClick={() => setMode(m)}
                 >
                   {COUNT_MODE_LABELS[m]}
@@ -229,9 +225,7 @@ export function Permitting() {
               {withConv
                 ? "Gross new construction plus net units created via conversion. Note this does not include full demolitions."
                 : "Gross new construction only. Conversions of existing buildings are excluded."}
-              {atIssue
-                ? " Wards are as drawn when each permit was issued, so conversions are unavailable in this view."
-                : ""}
+
             </p>
           </div>
         </div>
@@ -354,16 +348,7 @@ export function Permitting() {
                 <th className="num" title="Share of units in multi-family buildings">
                   {sortHead("mfhShare", "MFH %")}
                 </th>
-                {withConv && (
-                  <>
-                    <th className="num" title="Units created by converting existing buildings">
-                      {sortHead("convGained", "Conv +")}
-                    </th>
-                    <th className="num" title="Units lost to deconversion">
-                      {sortHead("convLost", "Conv \u2212")}
-                    </th>
-                  </>
-                )}
+
                 <th className="num">{sortHead("perYear", "Per year")}</th>
               </tr>
             </thead>
@@ -390,12 +375,7 @@ export function Permitting() {
                   <td className="num muted">
                     {r.mfhShare == null ? "—" : `${(r.mfhShare * 100).toFixed(0)}%`}
                   </td>
-                  {withConv && (
-                    <>
-                      <td className="num">{r.convGained ? `+${r.convGained}` : "—"}</td>
-                      <td className="num muted">{r.convLost ? `\u2212${r.convLost}` : "—"}</td>
-                    </>
-                  )}
+
                   <td className="num">{r.perYear.toFixed(0)}</td>
                 </tr>
               ))}
@@ -420,9 +400,12 @@ export function Permitting() {
         </p>
         <p>
           Including conversions adds units created by turning existing buildings into housing and
-          subtracts units lost when a building is deconverted into fewer, larger homes. Only
-          permits that state the change plainly are counted. Note that this does not give us a
-          true &lsquo;net&rsquo; figure, as demolitions are excluded.
+          subtracts units lost when a building is deconverted into fewer, larger homes. These land
+          in the same single-family and multi-family columns as new construction, on the same
+          rule: a building counts as single-family at one unit and multi-family at two or more. So
+          a two-flat becoming one house removes two multi-family units and adds one single-family
+          one. Only permits that state the change plainly are counted. Note that this does not
+          give us a true &lsquo;net&rsquo; figure, as demolitions are excluded.
         </p>
         <p>
           Source:{" "}

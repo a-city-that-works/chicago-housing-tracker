@@ -22,17 +22,27 @@ export interface PermitTables {
 }
 
 /**
- * Units created or lost by converting existing buildings. A FLOOR, not a
- * total: only permits that state the change plainly are counted, and
- * demolitions are not in here at all — which is why nothing on the site calls
- * the combined figure "net".
+ * Units created or lost by converting existing buildings, split the same way
+ * new construction is: a building counts as single-family at one unit and
+ * multi-family at two or more, so a conversion moves units between the two
+ * columns. Either figure can be negative — a two-flat becoming one house is
+ * -2 multi-family and +1 single-family.
+ *
+ * A FLOOR, not a total: only permits that state the change plainly are
+ * counted, and demolitions are not in here at all — which is why nothing on
+ * the site calls the combined figure "net".
  */
-export interface Conversions {
+export interface ConversionTables {
+  /** ward -> year -> change in units in 1-unit buildings */
+  sfh: Record<string, Record<string, number>>;
+  /** ward -> year -> change in units in 2+ unit buildings */
+  mfh: Record<string, Record<string, number>>;
+}
+
+export interface Conversions extends ConversionTables {
   note: string;
-  /** ward -> year -> units created */
-  gained: Record<string, Record<string, number>>;
-  /** ward -> year -> units lost, as a positive number */
-  lost: Record<string, Record<string, number>>;
+  /** The same, keyed on the ward stated on each permit. */
+  atIssue: ConversionTables;
 }
 
 export interface PermitsData extends PermitTables {
@@ -105,10 +115,10 @@ export interface WardPermits {
   units: number;
   /** Gross new construction, whatever the mode. */
   newUnits: number;
-  /** Units created by converting existing buildings. */
-  convGained: number;
-  /** Units lost to deconversion, as a positive number. */
-  convLost: number;
+  /** Change in single-family units from conversions. */
+  convSfh: number;
+  /** Change in multi-family units from conversions. */
+  convMfh: number;
   sfh: number;
   mfh: number;
   permits: number;
@@ -164,9 +174,9 @@ export function summarise(
   mode: CountMode = "new"
 ): { rows: WardPermits[]; years: number; total: number } {
   const t = tablesFor(data, basis);
-  // Conversions are only tabulated on current boundaries; under the at-issue
-  // basis they are left out rather than silently misattributed.
-  const conv = basis === "current" && mode === "withConversions";
+  const ct: ConversionTables =
+    basis === "atIssue" ? data.conversions.atIssue : data.conversions;
+  const conv = mode === "withConversions";
   const lastMonth = Number(data.meta.lastDate.slice(5, 7));
   const partial = to === data.meta.lastYear ? lastMonth / 12 : 1;
   const years = Math.max(0.25, to - from + partial);
@@ -179,26 +189,29 @@ export function summarise(
     let sfh = 0;
     let mfh = 0;
     let permits = 0;
-    let convGained = 0;
-    let convLost = 0;
+    let convSfh = 0;
+    let convMfh = 0;
     for (let y = from; y <= to; y++) {
       const ys = String(y);
       units += t.units[key]?.[ys] ?? 0;
       if (conv) {
-        convGained += data.conversions.gained[key]?.[ys] ?? 0;
-        convLost += data.conversions.lost[key]?.[ys] ?? 0;
+        convSfh += ct.sfh[key]?.[ys] ?? 0;
+        convMfh += ct.mfh[key]?.[ys] ?? 0;
       }
       sfh += t.sfh[key]?.[ys] ?? 0;
       mfh += t.mfh[key]?.[ys] ?? 0;
       permits += t.permits[key]?.[ys] ?? 0;
     }
     const newUnits = units;
-    units = newUnits + convGained - convLost;
+    // conversions land in the same columns as new construction
+    sfh += convSfh;
+    mfh += convMfh;
+    units = newUnits + convSfh + convMfh;
     total += units;
     rows.push({
-      ward: w, units, newUnits, convGained, convLost, sfh, mfh, permits,
+      ward: w, units, newUnits, convSfh, convMfh, sfh, mfh, permits,
       perYear: units / years,
-      mfhShare: newUnits > 0 ? mfh / newUnits : null,
+      mfhShare: units > 0 ? mfh / units : null,
       rank: 0,
     });
   }
@@ -218,11 +231,11 @@ export function yearlyTotals(
     let units = 0;
     for (const w of Object.keys(data.units)) units += data.units[w][ys] ?? 0;
     if (mode === "withConversions") {
-      for (const w of Object.keys(data.conversions.gained)) {
-        units += data.conversions.gained[w][ys] ?? 0;
+      for (const w of Object.keys(data.conversions.sfh)) {
+        units += data.conversions.sfh[w][ys] ?? 0;
       }
-      for (const w of Object.keys(data.conversions.lost)) {
-        units -= data.conversions.lost[w][ys] ?? 0;
+      for (const w of Object.keys(data.conversions.mfh)) {
+        units += data.conversions.mfh[w][ys] ?? 0;
       }
     }
     out.push({ year: y, units });
@@ -259,13 +272,13 @@ export function toCsv(
 ): string {
   const head = [
     "ward", "ward_basis", "count_mode", "units", "new_construction_units",
-    "conversion_units_gained", "deconversion_units_lost",
+    "conversion_sfh_change", "conversion_mfh_change",
     "sfh_units", "mfh_units", "mfh_share", "permits", "units_per_year", "years",
   ];
   const lines = [head.join(",")];
   for (const r of [...rows].sort((a, b) => a.ward - b.ward)) {
     lines.push([
-      r.ward, basis, mode, r.units, r.newUnits, r.convGained, r.convLost,
+      r.ward, basis, mode, r.units, r.newUnits, r.convSfh, r.convMfh,
       r.sfh, r.mfh,
       r.mfhShare == null ? "" : r.mfhShare.toFixed(4),
       r.permits, r.perYear.toFixed(2), `${from}-${to}`,
