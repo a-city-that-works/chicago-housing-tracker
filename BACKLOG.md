@@ -175,31 +175,79 @@ comparison is inconsistent today. Adding a conversions series fixes it.
 ## 2. Demolitions — the reason nothing says "net"
 
 Conversions and deconversions shipped; demolitions did not, and they are the
-single largest gap in any claim about net housing supply.
+single largest gap in any claim about net housing supply. Investigated
+thoroughly 2026-09; everything below is measured, not estimated.
 
-17,279 wrecking permits since 2010. Classified:
+### What the permits say
 
-| | Permits |
-|---|---|
-| Residential, **no unit count stated** | 13,906 |
-| Single family (safe to assume 1) | 2,063 |
-| Unclear | 889 |
-| Non-residential | 307 |
-| Residential **with** a unit count | 114 |
+17,279 wrecking permits since 2010:
 
-Only 2,413 units are recoverable, and that is a severe floor: the typical
-permit reads "WRECK AND REMOVE A 2 STORY FRAME BUILDING", which could be one
-home or six. At even 1.5 units per building the 13,906 unknown permits imply
-roughly 20,000 units lost, an order of magnitude more than we can count, which
-would take the 94,571 shown on the site down towards 75,000.
+| Class | Permits | Share |
+|---|---|---|
+| Explicitly residential | 7,562 | 44% |
+| Accessory structure (garage, shed, porch, deck) | 4,690 | 27% |
+| **Generic — "building" or "N story" only** | **3,656** | **21%** |
+| Explicitly non-residential | 996 | 6% |
+| Unclear | 375 | 2% |
 
-**This is why the permitting page says "units permitted + converted" and
-states plainly that it is not a net figure.** Publishing 2,413 as the
-demolition total would be far worse than publishing nothing.
+Beware two traps found the hard way. Text like `WRECK & REMOVE FRAMED
+RESIDENTIAL GARAGE` contains "residential" but is a garage, so accessory
+structures must be excluded *before* testing for residential wording. And the
+bare word "BUILDING" is not evidence of housing — an earlier pass counted
+12,176 residential demolitions by accepting it, against 7,562 confirmed.
 
-To do it properly the unit count has to come from outside the permit text.
-Cook County Assessor parcel data has units per property; joining on address or
-PIN before demolition would recover most of it. That is the real project.
+**Quick win available:** some generic permits are residential but written
+badly — `WRECK AND REMVOE A 2 STORY BRICK RES` is a typo for "remove" plus an
+abbreviation of "residence". Matching `\bRES\b` would recover a chunk of the
+3,656.
+
+### Unit counts are the real blocker
+
+Only **114 permits state a unit count**. Everything recoverable totals 2,413
+units, an order of magnitude below the truth: at even 1.5 units per building
+the unknowns imply roughly 20,000 units lost, which would take the 94,571 on
+the site down towards 75,000. Publishing 2,413 as a demolition total would
+mislead far worse than omitting it, which is why the permitting page says
+"units permitted + converted" and states plainly that it is not net.
+
+**The fix has to come from outside the permit text.** Cook County Assessor
+parcel data carries units per property; joining on address or PIN as of the
+date before demolition would resolve most of it. That is the real project.
+
+### Only about a fifth of demolitions are replaced on site
+
+| | Permits | Share |
+|---|---|---|
+| Rebuilt, exact address match within 5 years | 1,485 | 12% |
+| Rebuilt, found only by coordinates within 40 m | ~1,190 | 10% |
+| **Rebuilt, corrected estimate** | **~2,676** | **22%** |
+| **Not rebuilt** | **~9,400** | **78%** |
+
+The second row was validated, not assumed: address matching alone said 88%
+were never rebuilt, so 400 of those were re-checked spatially and 11% had a
+new-construction permit within 40 m. Widening the window from 5 years to 8
+barely moves it, so this is not a timing artifact. Note these rates are over
+the looser 12,176 population; they need recomputing against the 7,562.
+
+**The errors are one-directional, which is why this matters.** Where a site is
+rebuilt we count the replacement and never subtract what stood there — and
+855 of 1,488 confirmed rebuilds are single-family houses, so a two-flat
+replaced by one house is recorded as +1 when the truth is −1. Where it is not
+rebuilt the loss is invisible entirely. Almost every error overstates supply.
+
+### Where they concentrate
+
+Confirmed-residential demolitions by ward: w16 960, w20 572, w9 523, w17 425,
+w21 389, w32 351, w28 340, w24 288, w6 274, w15 272. Mostly South and West
+Side disinvestment, but wards 32 and 47 ranking high is a different story —
+North Side teardowns, the two-flat-to-single-family conversion.
+
+### If picked up again
+
+1. Tighten the classifier (`\bRES\b`, accessory-first ordering) and recompute
+   the rebuild rates against the 7,562 confirmed population.
+2. Join Cook County Assessor parcel data for unit counts.
+3. Only then consider a net figure, and say what it excludes.
 
 ## 3. Zoning map amendments by ward## 3. Zoning map amendments by ward
 
