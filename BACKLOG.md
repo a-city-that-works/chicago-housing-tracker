@@ -149,6 +149,20 @@ Order of tests matters: check for deconversion wording *first*, or
 "deconversion of 3 dwelling units to original 2" reads as +3. Exclude a hotel
 as the *result*, since hotel rooms are not dwelling units.
 
+**Accuracy.** A random sample of 25 was reviewed by hand: 24 correct, one
+wrong. The failure was "addition to existing 2 dwelling unit... to create 3
+dwelling units", where 3 is the total after the work, not an increment, so it
+scored +3 instead of +1. Across the whole corpus only 1 of 94 addition-pattern
+matches is ambiguous that way, worth +2 units, but the phrasing will recur and
+needs a guard: if a permit states a prior unit count and says "to create/
+provide N" without "add" or "new", treat N as the total.
+
+Largest single loss is 2300 N Lincoln Park West, the Belden-Stratford, going
+from 278 to 209 units on a $43M gut renovation of a 1920s hotel-residence.
+Verified against the permit trail. **Decision: no special-casing.** It is
+counted like any other loss, not flagged or framed separately; the table is
+sortable if a reader wants to find it.
+
 **These are floors, not totals.** Only permits with explicit parseable
 language are caught; a conversion that never states a count is invisible.
 Demolition losses are not in here at all — that is item 2.
