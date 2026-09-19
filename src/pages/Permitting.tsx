@@ -227,7 +227,7 @@ export function Permitting() {
             </div>
             <p className="pm-basis-hint">
               {withConv
-                ? "Gross new construction, plus units created by converting existing buildings, less units lost to deconversion. Demolitions are not counted, so this is not a net figure."
+                ? "Gross new construction plus net units created via conversion. Note this does not include full demolitions."
                 : "Gross new construction only. Conversions of existing buildings are excluded."}
               {atIssue
                 ? " Wards are as drawn when each permit was issued, so conversions are unavailable in this view."
