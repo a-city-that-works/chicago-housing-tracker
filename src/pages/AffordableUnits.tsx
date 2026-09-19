@@ -399,12 +399,17 @@ export function AffordableUnits() {
         </a>
         , a snapshot dated {aro.meta.vintage} covering {aro.meta.buildings} buildings and{" "}
         {aro.meta.units.toLocaleString()} units. That source carries no date on any record, so
-        each building is dated by the issue year of the nearest new-construction permit within{" "}
-        {aro.meta.matchMetres} metres; this succeeds for{" "}
-        {Math.round(aro.meta.datedShare * 100)}% of units, and the{" "}
-        {aro.meta.undatedBuildings} buildings that fail are mostly conversions of existing
-        structures, which never had a new-construction permit. Wards are recomputed on current
-        (2023) boundaries, as on the Permitting Map. Two important exclusions: this covers rental
+        each building is dated by the issue year of its new-construction permit: matched on
+        address where the street and house number agree within{" "}
+        {aro.meta.addrTolerance} ({aro.meta.matchMethods.exact + aro.meta.matchMethods.address}{" "}
+        buildings), and on coordinates within {aro.meta.matchMetres} metres only where no address
+        matched ({aro.meta.matchMethods.spatial}). Address matching is the more reliable of the
+        two: where both applied they agreed on the year in 113 of 116 cases, and every
+        disagreement was the coordinate match landing on a neighbouring parcel. Dating succeeds
+        for {Math.round(aro.meta.datedShare * 100)}% of units; the {aro.meta.undatedBuildings}{" "}
+        buildings that fail are mostly conversions of existing structures, which never had a
+        new-construction permit. Wards are recomputed on current (2023) boundaries, as on the
+        Permitting Map. Two important exclusions: this covers rental
         ARO units only, not for-sale units, and it does not capture units that developers chose
         not to build by paying the ordinance&rsquo;s in-lieu fee instead — a substantial share of
         how the ARO operates in practice.

@@ -167,6 +167,12 @@ than committing bad data:
 
 Requires `shapely` and `certifi`, both build-time only.
 
+## Reference
+
+- [docs/affordable-housing-categories.md](docs/affordable-housing-categories.md) —
+  what counts as an affordable unit in Chicago, which programs overlap, where
+  CHA fits, and why the categories must never be summed.
+
 ## What's next
 
 Planned work, in priority order, lives in [BACKLOG.md](BACKLOG.md).

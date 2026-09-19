@@ -4,6 +4,9 @@ What we intend to build next, in priority order, with enough on each item that
 someone could pick it up cold. Shipped work is described in the README; this
 file is only what's ahead.
 
+Background on the programs themselves is in
+[docs/affordable-housing-categories.md](docs/affordable-housing-categories.md).
+
 ## 1. Affordable units — where they're being permitted and built
 
 **Question.** Where in the city are affordable units going, and does that track
