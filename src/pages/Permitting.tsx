@@ -361,7 +361,10 @@ export function Permitting() {
 
       <p className="pm-method">
         Gross new construction units per ward. This map extracts unit counts from the city&rsquo;s
-        dataset on building permits, limited to permits for new construction. Unit counts are
+        dataset on building permits. It covers permits typed as new construction, plus permits
+        typed as renovations whose own description is of a new building &mdash; Chicago files some
+        towers that way, and leaving them out understated whole years. Conversions of existing
+        buildings are still excluded. Unit counts are
         extracted from each permit&rsquo;s work description, since the source dataset has no
         unit-count field; note that these figures are not exact, as about{" "}
         {Math.round(data.meta.unclassifiedShare * 100)}% of permits could not be classified (and are

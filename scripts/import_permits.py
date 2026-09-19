@@ -13,12 +13,24 @@ Three corrections do most of the work:
    ~70% of "new construction" permits are not housing at all (garages, porches,
    event tents, permit revisions) and are classified out.
 
+   The text says "units", "D.U." or "apartments" more or less interchangeably —
+   "NEW CONSTRUCTION 12 STORY RESIDENTIAL. 303 RESIDENTIAL APARTMENTS" — so all
+   three are read. Counting only the first two left whole towers unclassified.
+
 2. STAGED PERMITS. A large project pulls permits in sequence — caissons, then
    foundation, then full building — each repeating the project's unit count.
    One 339-unit tower appeared three times. Deduplicated on address + unit
    count within a two-year window.
 
-3. WARD BOUNDARIES MOVED. Wards were redrawn in 2015 and 2023, so a 2012 permit
+3. THE PERMIT TYPE LIES. Chicago sometimes files a brand-new building as
+   PERMIT - RENOVATION/ALTERATION. The Thompson, at 150 N Ashland, has a
+   renovation-typed permit reading "FULL BUILDING PERMIT FOR PROPOSED NEW 12
+   STORY RESIDENTIAL"; the only new-construction-typed permits at that address
+   are a tower crane and a hoist. So renovation permits whose text describes
+   new construction are fetched too. Genuine conversions are NOT included —
+   this remains a gross new-construction count — and are a separate question.
+
+4. WARD BOUNDARIES MOVED. Wards were redrawn in 2015 and 2023, so a 2012 permit
    carries a ward number that is not today's geography. Every permit is
    reassigned to its current ward by point-in-polygon on its coordinates.
    Validated at 99.87% against 2024+ permits, whose stated ward is already
@@ -71,6 +83,10 @@ TOTAL = re.compile(
 NUM = re.compile(r"(?<!CAR )(?<!CAR)\(?\b(\d{1,3})\)?\s*[- ]?\s*"
                  r"(?:DWELLING\s+|RESIDENTIAL\s+|EFFICIENCY\s+)?" + TAIL)
 WORD = re.compile(r"\b(" + "|".join(WORDNUM) + r")\s*[- ]?\s*(?:DWELLING\s+)?" + TAIL)
+# Permits say "apartments" as often as "units"; TAIL deliberately excludes the
+# word because "APARTMENT BUILDING" alone is not a count, so it gets its own
+# pattern requiring a preceding number.
+APARTMENTS = re.compile(r"\b(\d{1,4})\s+(?:NEW\s+)?(?:RESIDENTIAL\s+)?APARTMENTS?\b")
 
 
 def extract_units(t):
@@ -82,6 +98,9 @@ def extract_units(t):
         if 1 <= n <= 1000:
             return n
     nums = [int(x) for x in NUM.findall(t) if 1 <= int(x) <= 1000]
+    m = APARTMENTS.search(t)
+    if m and 1 <= int(m.group(1)) <= 2000:
+        nums.append(int(m.group(1)))
     if nums:
         return max(nums)
     w = WORD.search(t)
@@ -136,9 +155,16 @@ def fetch_permits():
     rows = get(API, {
         "$select": ("permit_,issue_date,ward,reported_cost,work_description,"
                     "street_number,street_direction,street_name,latitude,longitude"),
-        "$where": (f"permit_type='PERMIT - NEW CONSTRUCTION' "
-                   f"AND issue_date>='{START_YEAR}-01-01'"),
-        "$limit": 40000,
+        "$where": (
+            f"issue_date>='{START_YEAR}-01-01' AND ("
+            "permit_type='PERMIT - NEW CONSTRUCTION' OR "
+            # new buildings mis-typed as renovations — see note 3 above
+            "(permit_type='PERMIT - RENOVATION/ALTERATION' AND ("
+            "upper(work_description) like '%NEW CONSTRUCTION%' OR "
+            "upper(work_description) like '%PROPOSED NEW%' OR "
+            "upper(work_description) like '%ERECT NEW%' OR "
+            "upper(work_description) like '%CONSTRUCTION OF A NEW%')))"),
+        "$limit": 60000,
         "$order": "issue_date",
     })
     json.dump(rows, open(CACHE, "w"))
@@ -267,7 +293,8 @@ def main():
     years = sorted({rec[0][:4] for rec in kept})
     payload = {
         "meta": {
-            "source": "Chicago Building Permits (ydr8-5enu), PERMIT - NEW CONSTRUCTION",
+            "source": ("Chicago Building Permits (ydr8-5enu), PERMIT - NEW CONSTRUCTION "
+                       "plus renovation-typed permits describing new construction"),
             "firstYear": int(years[0]),
             "lastYear": int(years[-1]),
             "lastDate": last_date,

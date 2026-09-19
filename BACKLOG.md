@@ -120,25 +120,22 @@ match neither federal set, of which 152 are ARO. So the deduplicated
 universe is roughly 60,000–70,000 income-restricted rental units, not the
 ~120,000 a naive sum would give.
 
-## 1b. The permitting page undercounts: new construction filed as renovation
+## 1b. ~~New construction filed as renovation~~ — FIXED
 
-Found while debugging ARO dating. Chicago sometimes types a brand-new building
-as `PERMIT - RENOVATION/ALTERATION`. The Thompson's own permit text reads
-"FULL BUILDING PERMIT FOR PROPOSED NEW 12 STORY RESIDENTIAL" and it is typed
-renovation, so `scripts/import_permits.py`, which fetches new-construction
-permits only, never sees it.
+Shipped. Chicago sometimes types a brand-new building as
+`PERMIT - RENOVATION/ALTERATION` (the Thompson's permit reads "FULL BUILDING
+PERMIT FOR PROPOSED NEW 12 STORY RESIDENTIAL"), and the unit extractor only
+understood "units" and "D.U.", not "apartments". Both are fixed in
+`scripts/import_permits.py`; the citywide total moved from 89,420 to 92,142.
 
-Measured: of renovation permits since 2010 whose text says "new construction",
-"proposed new" or "erect new", **110 classify as multi-unit housing with a
-stated unit count, totalling 1,801 units** that the Permitting Map does not
-count. Concentrated in 2014 (703) and 2022 (452), so it distorts particular
-years more than the ~2% citywide total suggests.
-
-Fix is a wider `$where` in the permit importer plus a rule to separate genuine
-new construction from conversions, since the permitting page counts gross new
-construction and should not silently absorb adaptive reuse. Decide whether
-conversions become their own series — they are real housing supply, and the
-ARO page already distinguishes them.
+**Still open: conversions.** An existing building becoming housing — the
+Duncan's YMCA into 320 apartments — is real supply but is not new
+construction, and the permitting page excludes it by design. Sizing it needs
+care: a renovation permit saying "alterations to existing 21 unit building"
+states units that *already exist*, so naively summing renovation permits with
+unit counts gives a six-figure nonsense number. The honest approach isolates
+language like "to provide 320 new apartments". Decide whether it belongs as
+its own series before measuring.
 
 ## 2. Deconversions and demolitions
 
