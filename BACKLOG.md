@@ -172,25 +172,36 @@ Demolition losses are not in here at all — that is item 2.
 excludes conversions, because `permits.json` is new construction only. That
 comparison is inconsistent today. Adding a conversions series fixes it.
 
-## 2. Deconversions and demolitions
+## 2. Demolitions — the reason nothing says "net"
 
-**Question.** How many units is each ward losing, and what is net production
-once losses are subtracted? Two-flats becoming single-family homes is Chicago's
-signature affordability loss and it comes from the pipeline we already have.
+Conversions and deconversions shipped; demolitions did not, and they are the
+single largest gap in any claim about net housing supply.
 
-- **Data.** `ydr8-5enu` permit type `PERMIT - WRECKING/DEMOLITION` (2,366
-  since 2023; descriptions like "WRECK AND REMOVE A 2 STORY MASONRY MULTI UNIT
-  RESIDENCE"), plus renovation and new-construction descriptions containing
-  "deconvert", "convert … to single family", "from 2 to 1 dwelling unit".
-- **Output.** Units lost per ward per year; a *net* view on the permitting
-  page (gross − demolished − deconverted) or a tab of its own.
-- **Risk.** Demolition descriptions often say "multi unit" without a count.
-  Start with building counts and a floor estimate, flagged as approximate;
-  Cook County Assessor parcel data has unit counts if precision is needed.
-- **Policy hooks.** The 606 and Pilsen demolition-surcharge ordinances; two-
-  to-four-flat preservation.
+17,279 wrecking permits since 2010. Classified:
 
-## 3. Zoning map amendments by ward
+| | Permits |
+|---|---|
+| Residential, **no unit count stated** | 13,906 |
+| Single family (safe to assume 1) | 2,063 |
+| Unclear | 889 |
+| Non-residential | 307 |
+| Residential **with** a unit count | 114 |
+
+Only 2,413 units are recoverable, and that is a severe floor: the typical
+permit reads "WRECK AND REMOVE A 2 STORY FRAME BUILDING", which could be one
+home or six. At even 1.5 units per building the 13,906 unknown permits imply
+roughly 20,000 units lost, an order of magnitude more than we can count, which
+would take the 94,571 shown on the site down towards 75,000.
+
+**This is why the permitting page says "units permitted + converted" and
+states plainly that it is not a net figure.** Publishing 2,413 as the
+demolition total would be far worse than publishing nothing.
+
+To do it properly the unit count has to come from outside the permit text.
+Cook County Assessor parcel data has units per property; joining on address or
+PIN before demolition would recover most of it. That is the real project.
+
+## 3. Zoning map amendments by ward## 3. Zoning map amendments by ward
 
 **Question.** Which wards upzone and which downzone? This is aldermanic
 prerogative in data form, and it fills the gap the scorecard left without the

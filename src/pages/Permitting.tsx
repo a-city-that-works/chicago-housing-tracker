@@ -4,11 +4,13 @@ import { PermitMap } from "../components/PermitMap";
 import {
   PERMIT_BREAK_LABELS,
   PERMIT_RAMP,
+  COUNT_MODE_LABELS,
   summarise,
   toCsv,
   wardProjects,
   WARD_BASIS_LABELS,
   yearlyTotals,
+  type CountMode,
   type PermitsData,
   type WardBasis,
 } from "../lib/permits";
@@ -22,7 +24,9 @@ const CYCLE_START = 2023;
 const PERMITS_DATASET_URL = "https://data.cityofchicago.org/Buildings/Building-Permits/ydr8-5enu";
 
 /** Columns the table can be sorted on. */
-type SortKey = "rank" | "ward" | "units" | "sfh" | "mfh" | "mfhShare" | "perYear";
+type SortKey =
+  | "rank" | "ward" | "units" | "sfh" | "mfh" | "mfhShare" | "perYear"
+  | "convGained" | "convLost";
 
 export function Permitting() {
   const [from, setFrom] = useState(CYCLE_START);
@@ -30,17 +34,20 @@ export function Permitting() {
   const [selectedWard, setSelectedWard] = useState<number | null>(null);
   const [hoveredWard, setHoveredWard] = useState<number | null>(null);
   const [basis, setBasis] = useState<WardBasis>("current");
+  const [mode, setMode] = useState<CountMode>("new");
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({
     key: "units",
     desc: true,
   });
 
   const { rows, years, total } = useMemo(
-    () => summarise(data, from, to, basis),
-    [from, to, basis]
+    () => summarise(data, from, to, basis, mode),
+    [from, to, basis, mode]
   );
   const atIssue = basis === "atIssue";
-  const trend = useMemo(() => yearlyTotals(data), []);
+  // Conversions are only tabulated on current boundaries.
+  const withConv = mode === "withConversions" && !atIssue;
+  const trend = useMemo(() => yearlyTotals(data, withConv ? "withConversions" : "new"), [withConv]);
   const maxTrend = Math.max(...trend.map((t) => t.units));
 
   const sortedRows = useMemo(() => {
@@ -65,7 +72,7 @@ export function Permitting() {
     );
 
   const downloadCsv = () => {
-    const blob = new Blob([toCsv(rows, from, to, basis)], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob([toCsv(rows, from, to, basis, mode)], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -188,7 +195,7 @@ export function Permitting() {
           </p>
 
           <div className="pm-basis">
-            <span className="eyebrow">Ward boundaries</span>
+            <span className="eyebrow">Boundaries</span>
             <div className="pm-toggle" role="group" aria-label="Ward boundaries">
               {(Object.keys(WARD_BASIS_LABELS) as WardBasis[]).map((b) => (
                 <button
@@ -201,10 +208,30 @@ export function Permitting() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="pm-basis">
+            <span className="eyebrow">Count</span>
+            <div className="pm-toggle" role="group" aria-label="What to count">
+              {(Object.keys(COUNT_MODE_LABELS) as CountMode[]).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={mode === m ? "pm-tog on" : "pm-tog"}
+                  disabled={atIssue && m === "withConversions"}
+                  onClick={() => setMode(m)}
+                >
+                  {COUNT_MODE_LABELS[m]}
+                </button>
+              ))}
+            </div>
             <p className="pm-basis-hint">
+              {withConv
+                ? "Gross new construction, plus units created by converting existing buildings, less units lost to deconversion. Demolitions are not counted, so this is not a net figure."
+                : "Gross new construction only. Conversions of existing buildings are excluded."}
               {atIssue
-                ? "Counted under the ward as drawn when each permit was issued — what each alder's ward approved at the time."
-                : "Every permit placed on today's map by its coordinates — what has been built in each ward as it exists now."}
+                ? " Wards are as drawn when each permit was issued, so conversions are unavailable in this view."
+                : ""}
             </p>
           </div>
         </div>
@@ -212,7 +239,9 @@ export function Permitting() {
         <div className="pm-summary">
           <div className="pm-stat">
             <span className="pm-stat-value">{total.toLocaleString()}</span>
-            <span className="pm-stat-label">units permitted</span>
+            <span className="pm-stat-label">
+              {withConv ? "units permitted + converted" : "units permitted"}
+            </span>
           </div>
           <div className="pm-stat">
             <span className="pm-stat-value">{Math.round(total / years).toLocaleString()}</span>
@@ -325,6 +354,16 @@ export function Permitting() {
                 <th className="num" title="Share of units in multi-family buildings">
                   {sortHead("mfhShare", "MFH %")}
                 </th>
+                {withConv && (
+                  <>
+                    <th className="num" title="Units created by converting existing buildings">
+                      {sortHead("convGained", "Conv +")}
+                    </th>
+                    <th className="num" title="Units lost to deconversion">
+                      {sortHead("convLost", "Conv \u2212")}
+                    </th>
+                  </>
+                )}
                 <th className="num">{sortHead("perYear", "Per year")}</th>
               </tr>
             </thead>
@@ -351,6 +390,12 @@ export function Permitting() {
                   <td className="num muted">
                     {r.mfhShare == null ? "—" : `${(r.mfhShare * 100).toFixed(0)}%`}
                   </td>
+                  {withConv && (
+                    <>
+                      <td className="num">{r.convGained ? `+${r.convGained}` : "—"}</td>
+                      <td className="num muted">{r.convLost ? `\u2212${r.convLost}` : "—"}</td>
+                    </>
+                  )}
                   <td className="num">{r.perYear.toFixed(0)}</td>
                 </tr>
               ))}
@@ -371,7 +416,14 @@ export function Permitting() {
         ignored). Permits staged across several filings for one project are counted once. Ward
         boundaries were redrawn in 2015 and 2023: by default every permit is placed on today&rsquo;s
         map by its coordinates, while the &ldquo;at time of permit&rdquo; view keeps the ward number
-        recorded on the permit itself &mdash; the two differ on about a fifth of permits. Source:{" "}
+        recorded on the permit itself &mdash; the two differ on about a fifth of permits.{" "}
+        <strong>Including conversions</strong> adds units created by turning existing buildings
+        into housing and subtracts units lost when a building is deconverted into fewer, larger
+        homes. Only permits that state the change plainly are counted, so this is a floor.{" "}
+        <strong>It is not a net figure: demolitions are excluded.</strong> Around 14,000
+        demolition permits since 2010 describe a residential building without saying how many
+        homes it held, so the units lost that way cannot be recovered from this dataset and are
+        left out entirely rather than guessed at. Source:{" "}
         <a href={PERMITS_DATASET_URL} target="_blank" rel="noreferrer">
           Chicago Building Permits (ydr8-5enu)
         </a>
