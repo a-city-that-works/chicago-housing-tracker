@@ -14,12 +14,12 @@
   "preSeriesUnits": 6,
   "preSeriesLabel": "pre-2010",
   "addrTolerance": 25,
-  "unitsNewBuild": 1813,
-  "unitsConversion": 329,
+  "unitsNewBuild": 1812,
+  "unitsConversion": 330,
   "matchMethods": {
-   "exact": 154,
-   "address": 32,
-   "manual": 16,
+   "exact": 155,
+   "address": 30,
+   "manual": 17,
    "estimated": 1
   },
   "note": "Rental ARO units only. Excludes for-sale ARO units and units bought out through in-lieu fees. Years are the issue year of the nearest new-construction permit, not a field in the source. Buildings are matched to that permit by address only, and every candidate must plausibly be a residential building large enough to contain the ARO units."
@@ -418,17 +418,16 @@
   "2013": 20,
   "2014": 111,
   "2015": 54,
-  "2016": 43,
+  "2016": 42,
   "2017": 380,
-  "2018": 198,
+  "2018": 199,
   "2019": 298,
   "2020": 197,
   "2021": 139,
   "2022": 430,
-  "2023": 115,
+  "2023": 118,
   "2024": 122,
-  "2025": 18,
-  "2026": 3
+  "2025": 18
  },
  "byWardYear": {
   "1": {
@@ -503,9 +502,8 @@
    "2018": 12
   },
   "32": {
-   "2016": 1,
    "2017": 3,
-   "2018": 8,
+   "2018": 9,
    "2019": 12,
    "2022": 3
   },
@@ -560,7 +558,7 @@
    "2019": 12,
    "2020": 19,
    "2021": 2,
-   "2026": 3
+   "2023": 3
   },
   "45": {
    "2017": 6,
@@ -1494,9 +1492,9 @@
     "n": "The Western",
     "a": "1914 N. Milwaukee Ave",
     "u": 1,
-    "y": "2016",
-    "m": "address",
-    "k": "new"
+    "y": "2018",
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "SOBE Apts.",
@@ -1810,8 +1808,8 @@
     "n": "3204 N Clifton",
     "a": "3204 N Clifton",
     "u": 3,
-    "y": "2026",
-    "m": "address",
+    "y": "2023",
+    "m": "manual",
     "k": "new"
    },
    {

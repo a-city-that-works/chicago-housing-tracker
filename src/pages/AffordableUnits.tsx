@@ -232,7 +232,7 @@ export function AffordableUnits() {
           <figcaption>
             <h2>ARO units as a share of all new units</h2>
             <p>
-              Against every new housing unit permitted citywide that year.
+              Against every new housing unit permitted citywide that year, in new buildings and conversions alike.
             </p>
           </figcaption>
           <div className="af-bars" role="img" aria-label="ARO share of all new units per year">
@@ -337,7 +337,7 @@ export function AffordableUnits() {
                 <th className="num" title="Buildings containing ARO units, all years">
                   {sortHead("buildings", "Bldgs")}
                 </th>
-                <th className="num" title="All new housing units permitted in the ward">
+                <th className="num" title="All new housing units permitted in the ward: new construction plus net units from conversions">
                   {sortHead("allUnits", "All new")}
                 </th>
                 <th className="num" title="ARO units as a share of all new units">
@@ -430,7 +430,9 @@ export function AffordableUnits() {
         Conversions are included: many ARO buildings are adaptive reuse rather than new
         construction, so renovation permits stating a unit count are searched too &mdash; of the
         units dated here, {aro.meta.unitsNewBuild.toLocaleString()} are in newly built
-        structures and {aro.meta.unitsConversion.toLocaleString()} in converted ones. Dating
+        structures and {aro.meta.unitsConversion.toLocaleString()} in converted ones. For the
+        same reason, shares are measured against new construction plus the net units created by
+        conversions, the &ldquo;including conversions&rdquo; count on the Permitting Map. Dating
         succeeds for {Math.round(aro.meta.datedShare * 100)}% of units; because every figure on
         this page is filtered by year, the{" "}
         {aro.meta.undatedBuildings + aro.meta.preSeriesBuildings} buildings that are undated or

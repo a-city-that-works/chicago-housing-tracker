@@ -381,6 +381,14 @@ MANUAL_OVERRIDES = {
                  "building, the record's ARO count. Matched by hand 2026-10 on "
                  "location and unit count; less certain than a same-address match."),
     },
+    "3204 N Clifton": {
+        "addr": "1138 W Belmont Ave",
+        "note": ("Recorded on Clifton, the side street of a corner lot; the "
+                 "building is permitted on Belmont. Confirmed by hand 2026-10: "
+                 "new construction, 33 dwelling units, 2023-06-06 — a 9% ARO "
+                 "share. Without this it matched 3222 N Clifton, a 3-unit "
+                 "building permitted in May 2026, after the ARO snapshot itself."),
+    },
 }
 
 # Buildings with no usable building permit at all, dated by hand from other

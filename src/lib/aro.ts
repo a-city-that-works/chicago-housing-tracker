@@ -72,7 +72,7 @@ export interface AroWardRow {
   ward: number;
   units: number;
   buildings: number;
-  /** All new units permitted in the ward over the same span. */
+  /** All units permitted in the ward over the same span: new construction plus conversions. */
   allUnits: number;
   /** ARO units as a share of all new units, or null where nothing was built. */
   share: number | null;
@@ -114,6 +114,19 @@ export function aroYears(aro: AroData): number[] {
 }
 
 /**
+ * Everything permitted in a ward-year: new construction plus the net units
+ * created by conversions. ARO units are counted in converted buildings as well
+ * as new ones, so the denominator has to include conversions too.
+ */
+function allUnitsIn(permits: PermitsData, ward: string, year: string): number {
+  return (
+    (permits.units[ward]?.[year] ?? 0) +
+    (permits.conversions.sfh[ward]?.[year] ?? 0) +
+    (permits.conversions.mfh[ward]?.[year] ?? 0)
+  );
+}
+
+/**
  * Per-ward totals, joined to permit totals for the same years so ARO can be
  * expressed as a share of everything built.
  */
@@ -134,7 +147,7 @@ export function summariseAro(
     for (let y = from; y <= to; y++) units += aro.byWardYear[key]?.[String(y)] ?? 0;
 
     let allUnits = 0;
-    for (let y = from; y <= to; y++) allUnits += permits.units[key]?.[String(y)] ?? 0;
+    for (let y = from; y <= to; y++) allUnits += allUnitsIn(permits, key, String(y));
 
     // AMI mix is a property of the building, not of the year, so it is only
     // meaningful across the full record — shown as such in the table.
@@ -168,7 +181,7 @@ export function aroByYear(
     const ys = String(y);
     const a = aro.byYear[ys] ?? 0;
     let all = 0;
-    for (const w of Object.keys(permits.units)) all += permits.units[w][ys] ?? 0;
+    for (let w = 1; w <= 50; w++) all += allUnitsIn(permits, String(w), ys);
     out.push({ year: y, aro: a, all, share: all > 0 ? a / all : null });
   }
   return out;

@@ -95,14 +95,39 @@ REVISION = re.compile(r"\bREVISION\b|\bREVISE[SD]?\b|\bAMEND")
 #: including a 499-unit tower, until this was stripped before the test.
 CROSS_REF = re.compile(r"[\[(]?\s*(?:ALSO\s+)?SEE\s+(?:REVISION|PERMIT|APPLICATION)[^.\])]*[\])]?")
 SFR = re.compile(r"SINGLE\s*-?\s*FAMILY|\bSFR\b")
-EXISTING = re.compile(r"EXISTING[^.]{0,60}?\b(?:UNITS?|D\.?U\.?)\b")
-TAIL = r"(?:UNITS?|D\.\s?U\.?|DU)\b"
+EXISTING = re.compile(
+    r"EXISTING[^.]{0,60}?(?:\b(?:UNITS?|D\.?U\.?)\b|\b\w+[- ]FLAT\b)")
+# "UNITBUILDING" is a common run-together; the other tails need a word break.
+TAIL = r"(?:UNITS?(?:\b|(?=BUILDING))|D\.\s?U\.?|DU\b)"
+# Words that sit between the number and "units": "19 RESIDENTIAL DWELLING
+# UNITS", "496 RENTAL UNITS", "34 CONDO UNITS", "(16) NEW RESIDENTIAL UNITS".
+# Misspellings included because the permits include them.
+ADJ = (r"(?:(?:NEW|DWELLING|DWELING|RESIDENTIAL|RESIDENTAL|EFFICIENCY|APARTMENT|"
+       r"RENTAL|CONDO|CONDOMINIUM|STANDARD)\s+){0,3}")
 TOTAL = re.compile(
     r"\(?\b(\d{1,3})\)?\s*TOTAL\s+(?:DWELLING\s+|RESIDENTIAL\s+)?" + TAIL
-    + r"|TOTAL\s+\(?(\d{1,3})\)?\s*(?:DWELLING\s+|RESIDENTIAL\s+)?" + TAIL)
-NUM = re.compile(r"(?<!CAR )(?<!CAR)\(?\b(\d{1,3})\)?\s*[- ]?\s*"
-                 r"(?:DWELLING\s+|RESIDENTIAL\s+|EFFICIENCY\s+)?" + TAIL)
+    + r"|TOTAL\s+\(?(\d{1,3})\)?\s*(?:DWELLING\s+|RESIDENTIAL\s+)?" + TAIL
+    # "(6) DWELLING TOTAL"
+    + r"|\(?\b(\d{1,3})\)?\s*DWELLINGS?\s+TOTAL\b")
+NUM = re.compile(r"(?<!CAR )(?<!CAR)\(?\b(\d{1,3})\)?\s*[- ]?\s*" + ADJ + TAIL)
 WORD = re.compile(r"\b(" + "|".join(WORDNUM) + r")\s*[- ]?\s*(?:DWELLING\s+)?" + TAIL)
+# The one case where two counts are added: a building's standard units and its
+# efficiency units stated side by side ("45 STANDARD DWELLING UNITS AND 5
+# EFFICIENCY UNITS" is a 50-unit building).
+SPLIT = re.compile(
+    r"\b(\d{1,3})\s+(?:STANDARD\s+)?(?:DWELLING\s+)?UNITS?(?:\s+(?:AND|\+|&))?\s+"
+    r"(\d{1,3})\s+EFFICIENCY\s+(?:DWELLING\s+)?UNITS?")
+# "8 TOWNHOMES", "(8) 3-STORY TOWNHOUSES"; not "(TOTAL OF 43 TOWNHOUSES)",
+# which describes the complex a few new ones are being added to.
+TOWNHOMES = re.compile(r"(?<!TOTAL OF )\(?\b(\d{1,3})\)?\s+(?:NEW\s+|ATTACHED\s+)?"
+                       r"(?:\d[- ]STORY\s+)?TOWN\s?HO(?:ME|USE)S\b")
+# "3 FLAT", "6-FLAT", "TWO-FLAT". A flat count names the building type, so it
+# also appears on porch repairs and deconversions of existing buildings;
+# NOT_A_NEW_FLAT keeps those out.
+FLATS = re.compile(r"\b(\d{1,2})[- ]FLAT\b")
+WORDFLAT = re.compile(r"\b(TWO|THREE|FOUR|SIX|EIGHT)[- ]FLAT\b")
+NOT_A_NEW_FLAT = re.compile(
+    r"DE-?\s?CONVER|\bREPLACE|\bREPAIR|\bPERGOLA\b|\bRENOVATION\b|\bREHAB|\bALTERATION")
 # Permits say "apartments" as often as "units"; TAIL deliberately excludes the
 # word because "APARTMENT BUILDING" alone is not a count, so it gets its own
 # pattern requiring a preceding number.
@@ -194,20 +219,31 @@ def conversion_units(desc):
 
 
 def extract_units(t):
-    """Units for the project, or None. Prefers an explicit total; never sums —
+    """Units for the project, or None. Prefers an explicit total; never sums
+    (except standard + efficiency, see SPLIT) —
     '32 UNIT BUILDING (INCL. 6 EFFICIENCY UNITS)' is 32, not 38."""
+    m = SPLIT.search(t)
+    if m:
+        return int(m.group(1)) + int(m.group(2))
     m = TOTAL.search(t)
     if m:
-        n = int(m.group(1) or m.group(2))
+        n = int(next(g for g in m.groups() if g))
         if 1 <= n <= 1000:
             return n
     nums = [int(x) for x in NUM.findall(t) if 1 <= int(x) <= 1000]
     m = APARTMENTS.search(t)
     if m and 1 <= int(m.group(1)) <= 2000:
         nums.append(int(m.group(1)))
+    nums += [int(x) for x in TOWNHOMES.findall(t) if 1 <= int(x) <= 300]
+    new_flat = not NOT_A_NEW_FLAT.search(t)
+    if new_flat:
+        nums += [int(x) for x in FLATS.findall(t) if 2 <= int(x) <= 24]
     if nums:
         return max(nums)
     w = WORD.search(t)
+    if w:
+        return WORDNUM[w.group(1)]
+    w = WORDFLAT.search(t) if new_flat else None
     return WORDNUM[w.group(1)] if w else None
 
 
