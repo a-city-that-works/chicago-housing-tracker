@@ -389,6 +389,14 @@ MANUAL_OVERRIDES = {
                  "share. Without this it matched 3222 N Clifton, a 3-unit "
                  "building permitted in May 2026, after the ARO snapshot itself."),
     },
+    "2329 W. Monroe St.": {
+        "addr": "2329 W Monroe St",
+        "note": ("An off-site building for 1050 W Van Buren. The source's "
+                 "off-site field names that triggering project, so the matcher "
+                 "dated this from its 2022 permit. The building has its own: a "
+                 "renovation stating 8 units, 2019-09-05, the ARO count. Dated "
+                 "from its own permit by hand 2026-10."),
+    },
 }
 
 # Buildings with no usable building permit at all, dated by hand from other

@@ -14,12 +14,12 @@
   "preSeriesUnits": 6,
   "preSeriesLabel": "pre-2010",
   "addrTolerance": 25,
-  "unitsNewBuild": 1812,
-  "unitsConversion": 330,
+  "unitsNewBuild": 1804,
+  "unitsConversion": 338,
   "matchMethods": {
    "exact": 155,
-   "address": 30,
-   "manual": 17,
+   "address": 29,
+   "manual": 18,
    "estimated": 1
   },
   "note": "Rental ARO units only. Excludes for-sale ARO units and units bought out through in-lieu fees. Years are the issue year of the nearest new-construction permit, not a field in the source. Buildings are matched to that permit by address only, and every candidate must plausibly be a residential building large enough to contain the ARO units."
@@ -421,10 +421,10 @@
   "2016": 42,
   "2017": 380,
   "2018": 199,
-  "2019": 298,
+  "2019": 306,
   "2020": 197,
   "2021": 139,
-  "2022": 430,
+  "2022": 422,
   "2023": 118,
   "2024": 122,
   "2025": 18
@@ -475,10 +475,10 @@
    "2016": 8,
    "2017": 111,
    "2018": 49,
-   "2019": 96,
+   "2019": 104,
    "2020": 105,
    "2021": 60,
-   "2022": 341,
+   "2022": 333,
    "2023": 74,
    "2024": 66
   },
@@ -1178,9 +1178,9 @@
     "n": "2329 W. Monroe St.",
     "a": "2329 W. Monroe St.",
     "u": 8,
-    "y": "2022",
-    "m": "address",
-    "k": "new"
+    "y": "2019",
+    "m": "manual",
+    "k": "conversion"
    },
    {
     "n": "3803 W Ohio St",
