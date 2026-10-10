@@ -4,22 +4,24 @@
   "sourceUrl": "https://www.chicago.gov/city/en/sites/affordable-requirements-ordinance/home/aro-map.html",
   "service": "https://services7.arcgis.com/A03QrhyHnDaUmK0W/arcgis/rest/services/Geocoding_Result_ARO_Map_and_Dashboard_Data_Updated_02_06_2026_view/FeatureServer/0",
   "vintage": "2026-02-06",
-  "buildings": 206,
-  "units": 2159,
+  "buildings": 205,
+  "units": 2148,
   "datedUnits": 2142,
-  "datedShare": 0.9921,
-  "undatedBuildings": 1,
-  "undatedUnits": 11,
+  "datedShare": 0.9972,
+  "undatedBuildings": 0,
+  "undatedUnits": 0,
+  "notBuiltBuildings": 1,
+  "notBuiltUnits": 11,
   "preSeriesBuildings": 2,
   "preSeriesUnits": 6,
   "preSeriesLabel": "pre-2010",
   "addrTolerance": 25,
-  "unitsNewBuild": 1804,
-  "unitsConversion": 338,
+  "unitsNewBuild": 1815,
+  "unitsConversion": 327,
   "matchMethods": {
-   "exact": 155,
-   "address": 29,
-   "manual": 18,
+   "exact": 158,
+   "address": 27,
+   "manual": 17,
    "estimated": 1
   },
   "note": "Rental ARO units only. Excludes for-sale ARO units and units bought out through in-lieu fees. Years are the issue year of the nearest new-construction permit, not a field in the source. Buildings are matched to that permit by address only, and every candidate must plausibly be a residential building large enough to contain the ARO units."
@@ -334,14 +336,14 @@
    "ARO_100": 0
   },
   "45": {
-   "units": 39,
-   "buildings": 6,
+   "units": 28,
+   "buildings": 5,
    "dated": 5,
    "offSite": 0,
    "ARO_30": 0,
    "ARO_40": 0,
    "ARO_50": 0,
-   "ARO_60": 39,
+   "ARO_60": 28,
    "ARO_70": 0,
    "ARO_80": 0,
    "ARO_100": 0
@@ -420,11 +422,11 @@
   "2015": 54,
   "2016": 42,
   "2017": 380,
-  "2018": 199,
-  "2019": 306,
+  "2018": 176,
+  "2019": 312,
   "2020": 197,
-  "2021": 139,
-  "2022": 422,
+  "2021": 147,
+  "2022": 431,
   "2023": 118,
   "2024": 122,
   "2025": 18
@@ -474,8 +476,8 @@
    "2014": 24,
    "2016": 8,
    "2017": 111,
-   "2018": 49,
-   "2019": 104,
+   "2018": 43,
+   "2019": 110,
    "2020": 105,
    "2021": 60,
    "2022": 333,
@@ -588,7 +590,8 @@
   "48": {
    "2014": 16,
    "2017": 4,
-   "2018": 17,
+   "2021": 8,
+   "2022": 9,
    "2025": 3
   },
   "49": {
@@ -1179,7 +1182,7 @@
     "a": "2329 W. Monroe St.",
     "u": 8,
     "y": "2019",
-    "m": "manual",
+    "m": "exact",
     "k": "conversion"
    },
    {
@@ -1202,8 +1205,8 @@
     "n": "2824 W Van Buren",
     "a": "2824 W. Van Buren St.",
     "u": 6,
-    "y": "2018",
-    "m": "address",
+    "y": "2019",
+    "m": "exact",
     "k": "new"
    },
    {
@@ -1611,8 +1614,8 @@
     "a": "2312 W Ohio",
     "u": 6,
     "y": "2022",
-    "m": "address",
-    "k": "new"
+    "m": "exact",
+    "k": "conversion"
    },
    {
     "n": "Luxe on Chicago",
@@ -1869,14 +1872,6 @@
     "y": "2021",
     "m": "exact",
     "k": "new"
-   },
-   {
-    "n": "4849 N Lipps Ave",
-    "a": "4849 N Lipps Ave",
-    "u": 11,
-    "y": null,
-    "m": "none",
-    "k": null
    },
    {
     "n": "Six Corners Lofts",
@@ -2248,17 +2243,17 @@
     "n": "The Sally",
     "a": "1131 W. Winona St.",
     "u": 9,
-    "y": "2018",
+    "y": "2022",
     "m": "exact",
-    "k": "conversion"
+    "k": "new"
    },
    {
     "n": "The Sally",
     "a": "1135 W. Winona St.",
     "u": 8,
-    "y": "2018",
+    "y": "2021",
     "m": "exact",
-    "k": "conversion"
+    "k": "new"
    },
    {
     "n": "The Synagogue",

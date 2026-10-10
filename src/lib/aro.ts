@@ -51,6 +51,9 @@ export interface AroData {
     datedShare: number;
     undatedBuildings: number;
     undatedUnits: number;
+    /** Listed in the source but never constructed; left out of every total. */
+    notBuiltBuildings: number;
+    notBuiltUnits: number;
     /** Buildings whose permit predates the permit record; dated, but off the series. */
     preSeriesBuildings: number;
     preSeriesUnits: number;

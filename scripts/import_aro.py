@@ -389,14 +389,14 @@ MANUAL_OVERRIDES = {
                  "share. Without this it matched 3222 N Clifton, a 3-unit "
                  "building permitted in May 2026, after the ARO snapshot itself."),
     },
-    "2329 W. Monroe St.": {
-        "addr": "2329 W Monroe St",
-        "note": ("An off-site building for 1050 W Van Buren. The source's "
-                 "off-site field names that triggering project, so the matcher "
-                 "dated this from its 2022 permit. The building has its own: a "
-                 "renovation stating 8 units, 2019-09-05, the ARO count. Dated "
-                 "from its own permit by hand 2026-10."),
-    },
+}
+
+# Listed in the source but never built, so there are no units to count.
+NOT_BUILT = {
+    "4849 N Lipps Ave": ("'Jefferson Place', a 114-unit, 16-story tower approved by "
+                         "the Plan Commission in May 2017. No construction permit "
+                         "was ever issued on or near the site, and it has not been "
+                         "built (confirmed by hand 2026-10)."),
 }
 
 # Buildings with no usable building permit at all, dated by hand from other
@@ -488,7 +488,12 @@ def main():
 
     cls = load_classifier()
 
-    buildings = fetch_aro()
+    listed = fetch_aro()
+    buildings = [b for b in listed if (b.get("Name") or "").strip() not in NOT_BUILT]
+    not_built_units = sum(int(b["ARO_Units"] or 0) for b in listed) - sum(
+        int(b["ARO_Units"] or 0) for b in buildings)
+    print(f"  dropped as never built: {len(listed) - len(buildings)} buildings, "
+          f"{not_built_units} units")
     total_units = sum(int(b["ARO_Units"] or 0) for b in buildings)
     print(f"  {len(buildings)} ARO buildings, {total_units:,} units")
 
@@ -549,13 +554,15 @@ def main():
          -1. a hand-verified MANUAL_OVERRIDES address — checked first,
              for the handful of buildings whose real address is not in
              the source record under any field
-          0. the off-site address, if the record names one — explicit in
-             the source, and may legitimately be shared by several projects
-             paying into one receiving building
           1. either endpoint of a declared address range, or the single
              geocoded address when there is no range — an exact number
           2. any address strictly inside a declared range, correct parity
-          3. proximity fallback, +/- ADDR_TOLERANCE house numbers
+          3. for an off-site building with no permit of its own: the
+             triggering project named in the record's off-site field. That
+             field is the development that created the obligation, not where
+             the units are, so it dates the obligation rather than the
+             building and may be shared by several off-site buildings
+          4. proximity fallback, +/- ADDR_TOLERANCE house numbers
 
         "1257-1301 N Ashland Ave" is the case this matters for: the geocoder
         kept 1301, and the nearest building AT 1301 was a plausible but wrong
@@ -598,7 +605,16 @@ def main():
                                permit_index=(permit_by_id if shared else None))
             if units is None:
                 return
-            rank = (tier, 0 if gap == 0 else 1, 0 if kind == "new" else 1,
+            # Order of confidence. A permit at the building's own address (or
+            # inside its declared range) comes first. The triggering project
+            # named in the off-site field comes next: it dates the obligation,
+            # not the building, so it is only a fallback. A merely nearby
+            # permit on the building's own street comes last.
+            if shared:
+                order = 3.5
+            else:
+                order = tier if gap == 0 else tier + 3
+            rank = (order, 0 if gap == 0 else 1, 0 if kind == "new" else 1,
                     -units, p["issue_date"])
             if best is None or rank < best[0]:
                 best = (rank, p, gap, kind, tier)
@@ -750,6 +766,8 @@ def main():
             "datedShare": round(dated_units / total_units, 4),
             "undatedBuildings": len(undated),
             "undatedUnits": undated_units,
+            "notBuiltBuildings": len(listed) - len(buildings),
+            "notBuiltUnits": not_built_units,
             "preSeriesBuildings": len(pre_series),
             "preSeriesUnits": sum(pre_series),
             "preSeriesLabel": PRE_SERIES_LABEL,

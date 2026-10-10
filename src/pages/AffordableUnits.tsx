@@ -193,9 +193,15 @@ export function AffordableUnits() {
           A further {(aro.meta.units - aro.meta.datedUnits).toLocaleString()} ARO units are
           excluded from every figure here: {aro.meta.preSeriesUnits} in{" "}
           {aro.meta.preSeriesBuildings} buildings permitted before {FIRST}, when the permit record
-          used here begins, and {aro.meta.undatedUnits} in {aro.meta.undatedBuildings}{" "}
-          {aro.meta.undatedBuildings === 1 ? "building" : "buildings"} that could not be matched to
-          a building permit at all.
+          used here begins
+          {aro.meta.undatedBuildings > 0 && (
+            <>
+              , and {aro.meta.undatedUnits} in {aro.meta.undatedBuildings}{" "}
+              {aro.meta.undatedBuildings === 1 ? "building" : "buildings"} that could not be
+              matched to a building permit at all
+            </>
+          )}
+          .
         </p>
       </section>
 
@@ -433,11 +439,21 @@ export function AffordableUnits() {
         structures and {aro.meta.unitsConversion.toLocaleString()} in converted ones. For the
         same reason, shares are measured against new construction plus the net units created by
         conversions, the &ldquo;including conversions&rdquo; count on the Permitting Map. Dating
-        succeeds for {Math.round(aro.meta.datedShare * 100)}% of units; because every figure on
+        succeeds for {Math.floor(aro.meta.datedShare * 100)}% of units; because every figure on
         this page is filtered by year, the{" "}
         {aro.meta.undatedBuildings + aro.meta.preSeriesBuildings} buildings that are undated or
         were permitted before {FIRST} are excluded throughout, so totals here run below the{" "}
-        {aro.meta.units.toLocaleString()} units in the full source. Wards are recomputed on
+        {aro.meta.units.toLocaleString()} units counted here.
+        {aro.meta.notBuiltBuildings > 0 && (
+          <>
+            {" "}
+            {aro.meta.notBuiltBuildings === 1 ? "One project" : `${aro.meta.notBuiltBuildings} projects`}{" "}
+            listed in the source ({aro.meta.notBuiltUnits} ARO units){" "}
+            {aro.meta.notBuiltBuildings === 1 ? "was" : "were"} approved but never built and{" "}
+            {aro.meta.notBuiltBuildings === 1 ? "is" : "are"} left out entirely.
+          </>
+        )}{" "}
+        Wards are recomputed on
         current (2023) boundaries, as on the Permitting Map. Two important exclusions: this covers rental
         ARO units only, not for-sale units, and it does not capture units that developers chose
         not to build by paying the ordinance&rsquo;s in-lieu fee instead — a substantial share of
