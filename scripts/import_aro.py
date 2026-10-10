@@ -95,12 +95,22 @@ OUT = "src/data/aro.json"
 # numbers run 100 to the block, so this stays on the block face.
 ADDR_TOLERANCE = 25
 
-# Things that are emphatically not the building the ARO units are in.
+# Permits that ARE one of these are never the building the ARO units are in.
 NOT_A_BUILDING = re.compile(
-    r"\bTENT\b|\bCANOPY\b|\bTEMPORARY\b|\bBLEACHER\b|\bSTAGE\b|\bTRUSS\b|\bSIGN\b|"
-    r"\bFENCE\b|\bSHED\b|\bANTENNA\b|\bSWIMMING POOL\b|\bPARKING LOT\b|\bGREENHOUSE\b|"
-    r"\bCRANE\b|\bHOIST\b|\bSCAFFOLD\b|\bSIDEWALK\b|\bWRECK\b|\bDEMOLITION\b|"
-    r"\bCAR ?WASH\b|\bSTATION\b|\bTUCKPOINT|\bMAINTENANCE\b|\bPORCH\b|\bLINTEL")
+    r"\bTENT\b|\bCANOPY\b|\bTEMPORARY\b|\bBLEACHER\b|\bSTAGE\b|"
+    r"\bCRANE\b|\bHOIST\b|\bSCAFFOLD\b|\bWRECK\b|\bDEMOLITION\b")
+# Words that disqualify a permit only when it names no new unit count. A real
+# building permit mentions these in passing all the time: Somerset Place's
+# 160-unit conversion ends "...AND A SURFACE PARKING LOT", 4646 N Damen's 24
+# units include "A 6'-0\" TALL FENCE". Treating them as vetoes threw out five
+# correct exact-address matches and sent a sixth to the wrong building.
+INCIDENTAL = re.compile(
+    r"\bTRUSS\b|\bSIGN\b|\bFENCE\b|\bSHED\b|\bANTENNA\b|\bSWIMMING POOL\b|"
+    r"\bPARKING LOT\b|\bGREENHOUSE\b|\bSIDEWALK\b|\bCAR ?WASH\b|\bSTATION\b|"
+    r"\bTUCKPOINT|\bMAINTENANCE\b|\bPORCH\b|\bLINTEL")
+# A count that describes what is already there, not what the permit builds:
+# "CURRENT USE : MIXED-USE (A2) 36 RESIDENTIAL DU ... PROPOSED WORK: INTERIOR
+# BUILD-OUT FOR DAY CARE" is a day-care fit-out, not a 36-unit building.
 # "320 NEW APARTMENTS" — the permit importer's extractor only knows UNITS and
 # D.U., which is fine for counting new construction but loses conversions.
 APARTMENTS = re.compile(r"\b(\d{1,4})\s+(?:NEW\s+)?(?:RESIDENTIAL\s+)?APARTMENTS?\b")
@@ -125,7 +135,54 @@ def unit_count(text, classifier):
     return n
 
 
-def plausible(permit, need, classifier, require_count=False):
+#: Chicago's convention for filing several buildings of one development
+#: together: a master permit's text lists every sibling ("BUILDING # 1, BLDG.
+#: # 2 100645755, BLDG. # 3 100645751 ..."), and satellite permits point back
+#: at the master ("SEE PERMIT NO. 100645761 FOR APPROVED PLANS").
+PERMIT_ID_REF = re.compile(r"\b(\d{9})\b")
+
+
+def complex_capacity(permit, permit_index, classifier):
+    """
+    Total units across the multi-building development this permit belongs to,
+    if Chicago's cross-referencing convention is detected in its text; None
+    otherwise.
+
+    Found because two ARO records (1623 N Talman, 1447 N Washtenaw) both
+    named an off-site address that resolved to one 5-unit permit, needing 8
+    combined — impossible for a 5-unit building. That building is "Building
+    #7" of an 8-building, ~49-unit townhome development spanning Homer,
+    Campbell and Cortland, permitted the same week in September 2016; 8 fits
+    comfortably once the receiving site's real capacity is counted rather
+    than the one building nearest the stated address.
+    """
+    raw = (permit.get("work_description") or "").upper()
+    own = unit_count(raw, classifier) or 0
+    ids = set(PERMIT_ID_REF.findall(raw)) - {permit.get("permit_")}
+    if not ids:
+        return None
+    seen = {permit.get("permit_")}
+    total = own
+    frontier = ids
+    for _ in range(2):  # a satellite is one hop from the master; the master
+        nxt = set()      # lists every other sibling in that same hop
+        for pid in frontier:
+            if pid in seen:
+                continue
+            seen.add(pid)
+            sibling = permit_index.get(pid)
+            if not sibling:
+                continue
+            st = (sibling.get("work_description") or "").upper()
+            n = unit_count(st, classifier)
+            if n:
+                total += n
+            nxt |= set(PERMIT_ID_REF.findall(st))
+        frontier = nxt - seen
+    return total if total > own else None
+
+
+def plausible(permit, need, classifier, require_count=False, permit_index=None):
     """
     Unit count if this permit could be the building holding `need` ARO units,
     else None. `classifier` is the permit importer's module, reused for its
@@ -133,6 +190,12 @@ def plausible(permit, need, classifier, require_count=False):
 
     `require_count` is used for renovation permits, where an explicit unit
     count is the only thing separating a conversion from a kitchen remodel.
+
+    `permit_index` (permit_ -> permit) enables the complex-capacity fallback:
+    if this specific permit's own stated count is too small or absent, but it
+    is part of a cross-referenced multi-building development whose combined
+    capacity covers `need`, that counts as plausible. Pass it only for shared
+    off-site matches — everywhere else, a building should stand on its own.
     """
     t = classifier.CROSS_REF.sub(" ", (permit.get("work_description") or "").upper())
     if NOT_A_BUILDING.search(t) or classifier.REVISION.search(t):
@@ -142,11 +205,17 @@ def plausible(permit, need, classifier, require_count=False):
     if classifier.SFR.search(t):
         return None
     n = unit_count(t, classifier)
-    if n is not None and n < need:
+    if n is None and INCIDENTAL.search(t):
         return None
-    if n is None and (require_count or not RESIDENTIAL.search(t)):
-        return None
-    return n or 0
+    if n is not None and n >= need:
+        return n
+    if n is None and not (require_count or not RESIDENTIAL.search(t)):
+        return 0
+    if permit_index is not None:
+        cap = complex_capacity(permit, permit_index, classifier)
+        if cap is not None and cap >= need:
+            return cap
+    return None
 
 
 def street_key(number, rest):
@@ -178,42 +247,177 @@ def parse_address(text):
 ADDRESS_RANGE = re.compile(r"^\s*(\d+)\s*[-\u2013]\s*(\d+)")
 
 
-def candidate_anchors(rec):
+def in_range_addresses(rec):
     """
-    Addresses the building's permit might be filed under, best first.
+    (low, high, street) if Project_Ad names an address range, else None.
 
-    Three things the geocoded address alone gets wrong:
-
-    - OFF-SITE UNITS. 19 records put their ARO units at a different address
-      entirely and say where: Elm Street Plaza is a Dearborn project whose 34
-      units sit at 344 S Canal. Matching the project address dates the wrong
-      building, or none.
-    - ADDRESS RANGES. 17 records give a range and the geocoder keeps one end,
-      which may not be the end the permit used.
-    - Both, for a handful.
+    "1257-1301 N Ashland Ave" is one range on one street; the geocoder keeps
+    only one end (Match_addr), which may not be the end nearest the permit.
     """
-    out = []
-    if (rec.get("Off_site_P") or "").strip().lower() == "yes":
-        k = parse_address(rec.get("If_off_sit"))
-        if k:
-            out.append(k)
     head = (rec.get("Match_addr") or "").split(",")[0].strip()
     geo = parse_address(head)
-    if geo:
-        out.append(geo)
-        m = ADDRESS_RANGE.match((rec.get("Project_Ad") or "").strip())
-        if m:
-            for n in (int(m.group(1)), int(m.group(2))):
-                if n != geo[0]:
-                    out.append((n, geo[1]))
-    seen, uniq = set(), []
-    for k in out:
-        if k not in seen:
-            seen.add(k)
-            uniq.append(k)
-    return uniq
+    if not geo:
+        return None
+    m = ADDRESS_RANGE.match((rec.get("Project_Ad") or "").strip())
+    if not m:
+        return None
+    lo, hi = sorted((int(m.group(1)), int(m.group(2))))
+    return lo, hi, geo[1]
 
 AMI_TIERS = ["ARO_30", "ARO_40", "ARO_50", "ARO_60", "ARO_70", "ARO_80", "ARO_100"]
+
+
+#: Buildings whose correct address is verified by hand and appears NOWHERE in
+#: the ARO source record — not in Match_addr, Project_Ad, or If_off_sit — so
+#: no address-matching logic could ever find them algorithmically. Each entry
+#: was confirmed against the permit text before being added here; add a dated
+#: note explaining how it was found. Checked first, ahead of every other tier.
+MANUAL_OVERRIDES = {
+    "Vista on the Park": {
+        "addr": "1554 N Talman Ave",
+        "note": ("The record's own off-site address (2635 W North) has no permit "
+                 "that can hold its 3 ARO units. Confirmed by hand 2026-09: exact "
+                 "address, new construction, 30 D.U., 2017-07-10 — a 10% ARO share."),
+    },
+    "Millie on Michigan": {
+        "addr": "88 E Wacker Pl",
+        "note": ("The record names no off-site address at all. The building is a "
+                 "47-story hotel/residential/retail tower (completed ~2022), "
+                 "confirmed by hand 2026-09 via its Phase I permit (100824888, "
+                 "2020-08-07). None of its five permits states a residential unit "
+                 "count, so this dates the building but cannot verify its ARO share."),
+    },
+    "The Raven Residences": {
+        "addr": "4733 N Wolcott Ave",
+        "note": ("Recorded at 1825 W Lawrence, a corner lot; the building is "
+                 "permitted on its Wolcott frontage. Confirmed by hand 2026-10: new "
+                 "construction, 112 D.U., 2021-04-22 — a 15% ARO share."),
+    },
+    "District Haus": {
+        "addr": "1626 W Hastings St",
+        "note": ("Recorded at 1310 S Ashland. It is eight six-flats on Hastings and "
+                 "13th St (48 units), all permitted 2024-08-16 to 08-23; 1626 W "
+                 "Hastings is one of them. Confirmed by hand 2026-10. The permits "
+                 "say '(6) DWELLING TOTAL', which the unit extractor cannot read."),
+    },
+    "Triangle Square": {
+        "addr": "2155 N Elston Ave",
+        "note": ("Recorded at 2075 N Elston, 80 house numbers away. Confirmed by "
+                 "hand 2026-10: 7-story apartment building, foundation permit "
+                 "2019-12-20. No permit there states a unit count."),
+    },
+    "The Oasis of Bucktown": {
+        "addr": "1700 N Western Ave",
+        "note": ("Recorded at 2400 W Wabansia, a corner lot with no permit; the "
+                 "building is permitted on its Western frontage. Confirmed by hand "
+                 "2026-10: new construction, 60 units, 2019-07-08 — a 15% ARO share."),
+    },
+    "Panorama": {
+        "addr": "918 W School St",
+        "note": ("Recorded at 3300 N Clark; permitted on its School St frontage. "
+                 "Confirmed by hand 2026-10: new construction, 140 D.U., 2019-12-05."),
+    },
+    "The Henry": {
+        "addr": "4346 N Honore St",
+        "note": ("Recorded at 1819 W Montrose; permitted on its Honore frontage. "
+                 "Confirmed by hand 2026-10: 38 D.U., foundation permit 2017-12-08. "
+                 "The permit itself says 4 units will be on-site affordable, which "
+                 "is this record's ARO count."),
+    },
+    "The Westner": {
+        "addr": "2407 W Eastwood Ave",
+        "note": ("Recorded at 4618 N Western; permitted on its Eastwood frontage. "
+                 "Confirmed by hand 2026-10: new construction, 40 units, foundation "
+                 "permit 2016-08-22."),
+    },
+    "4114 W West End Avenue": {
+        "addr": "4114 W West End Ave",
+        "note": ("An off-site building for 166-67 N Aberdeen. The address is right "
+                 "but its permit (2021-02-17) is a gut renovation of an existing "
+                 "6-unit building, short of the 8 ARO units recorded, so the size "
+                 "test rejected it. A 2-unit coach house was permitted alongside it "
+                 "two weeks later, which makes 8. Confirmed by hand 2026-10."),
+    },
+    "1447 N. Superior Holding": {
+        "addr": "1447 W Superior St",
+        "note": ("The address is right. Its permit (100840009, 2020-03-10) converts "
+                 "a monastery to 'SIXTEEEN (16)APARTMENT UNITS' — a typo and a "
+                 "missing space the unit extractor cannot read — so with no count "
+                 "the matcher fell through to a 6-unit neighbour at 1459. "
+                 "Confirmed by hand 2026-10 against the developer's project page."),
+    },
+    "Saxony Wilson": {
+        "addr": "4601 N Paulina St",
+        "note": ("Recorded at 1630 W Wilson; permitted on its Paulina frontage. A "
+                 "former masonic temple (later the American Indian Center), also "
+                 "let as Paulina Street Lofts. Confirmed by hand 2026-10: "
+                 "conversion to 24 D.U., permit 100678169, 2017-10-11."),
+    },
+    "Wicker Park Place": {
+        "addr": "1162 N Milwaukee Ave",
+        "note": ("Recorded at 1504 W. Haddon; permitted on its Milwaukee frontage. "
+                 "Confirmed by hand 2026-10: new construction, 14 units, permit "
+                 "100894530, 2024-06-28. A 2025 fire-alarm permit filed at 1504 W "
+                 "Haddon cites that permit number, which ties the two addresses."),
+    },
+    "2719 W Cermak": {
+        "addr": "2719 W Cermak Rd",
+        "note": ("The address is right. Its permit (100730505, 2020-09-11) creates "
+                 "'(16) NEW RESIDENTIAL UNITS' on the upper floors, a phrasing the "
+                 "unit extractor cannot read. Confirmed by hand 2026-10."),
+    },
+    "20 S Hamlin": {
+        "addr": "20 S Hamlin Blvd",
+        "note": ("An off-site building for 166-67 N Aberdeen. The address is right: "
+                 "permit 100907064, 2021-04-23, a gut renovation of an existing "
+                 "'SEVEN (7) DWELLING UNIT BUILDING', adding one. Same developer "
+                 "pattern and season as 4114 W West End. Confirmed by hand 2026-10."),
+    },
+    "3639 W Iowa": {
+        "addr": "856 N Monticello Ave",
+        "note": ("An off-site building for 1140 W Erie, on the corner of Iowa and "
+                 "Monticello; nothing is filed on Iowa. Permit 100929314, "
+                 "2021-11-30, is an interior remodel of an existing 4-unit "
+                 "building, the record's ARO count. Matched by hand 2026-10 on "
+                 "location and unit count; less certain than a same-address match."),
+    },
+}
+
+# Buildings with no usable building permit at all, dated by hand from other
+# evidence. Kept apart from MANUAL_OVERRIDES because the year here is an
+# estimate, not a permit's issue date.
+ESTIMATED_YEARS = {
+    "3121 W Monroe": {
+        "year": "2021",
+        "kind": "conversion",
+        "note": ("An off-site building for 1140 W Erie; a rehab of an existing "
+                 "four-flat with no renovation permit on record. A construction "
+                 "loan was recorded 2020-11, and an easy permit of 2021-09-28 "
+                 "(100941788) fits out exactly four units, the ARO count. The "
+                 "other 1140 W Erie off-site buildings date to 2021-22. "
+                 "Estimated by hand 2026-10."),
+    },
+}
+
+# Buildings whose permit was found by hand but predates the permit record used
+# here (2010 on). They are dated, but to a year outside the series, so they are
+# labelled "pre-2010" and kept out of every by-year figure.
+PRE_SERIES = {
+    "Glenlake LLC": {
+        "kind": "conversion",
+        "note": ("1544 W Glenlake, permit of 2009-04-24: renovation and 3-story "
+                 "addition taking a 6-unit building to 32 dwelling units. 3 ARO "
+                 "units of 32 is about 10%. Found by hand 2026-10."),
+    },
+    "Axis Apartments and Lofts": {
+        "kind": "conversion",
+        "note": ("The 441 E Erie tower dates from 1986; the ARO units belong to "
+                 "the 'Lofts', offices converted on the Ontario side. Permit of "
+                 "2009-05-14 at 448 E Ontario converts a 12-story building to 32 "
+                 "residential units. Found by hand 2026-10."),
+    },
+}
+PRE_SERIES_LABEL = "pre-2010"
 
 
 def _ssl_context():
@@ -316,46 +520,129 @@ def main():
                 by_street[core].append((k[0], p, kind))
     print(f"  permit pool: {kinds_seen['new']:,} new construction + "
           f"{kinds_seen['conversion']:,} renovation")
+    permit_by_id = {p["permit_"]: p for p in permits}
 
     claimed = set()
 
     def match_by_address(rec, need):
         """
-        Best plausible permit across every address this building might be filed
-        under: exact number first, then the larger building, then the earlier
-        permit. New construction outranks a renovation at the same address,
-        since a conversion permit on a new building is a later fit-out.
+        Best plausible permit for this building, searched in strict tiers
+        rather than by nearest-wins: a confirmed address always beats a
+        nearby guess, however close the guess is.
+
+         -1. a hand-verified MANUAL_OVERRIDES address — checked first,
+             for the handful of buildings whose real address is not in
+             the source record under any field
+          0. the off-site address, if the record names one — explicit in
+             the source, and may legitimately be shared by several projects
+             paying into one receiving building
+          1. either endpoint of a declared address range, or the single
+             geocoded address when there is no range — an exact number
+          2. any address strictly inside a declared range, correct parity
+          3. proximity fallback, +/- ADDR_TOLERANCE house numbers
+
+        "1257-1301 N Ashland Ave" is the case this matters for: the geocoder
+        kept 1301, and the nearest building AT 1301 was a plausible but wrong
+        9-unit permit 20 doors off. Ranking by proximity picked that over the
+        real, exact 24-unit permit at 1257 — the range's other end — because
+        proximity from the wrong anchor still beat an exact match from the
+        right one. Tiering by confidence first fixes that.
+
+        Within a tier: new construction outranks a renovation at the same
+        address, since a conversion permit on a new building is a later
+        fit-out; the larger building outranks the smaller; the earlier permit
+        outranks the later one.
         """
         offsite = (rec.get("Off_site_P") or "").strip().lower() == "yes"
         best = None
-        for anchor_i, (num, street) in enumerate(candidate_anchors(rec)):
-            # the first anchor of an off-site record is the receiving building,
-            # which legitimately holds units owed by several projects
-            shared = offsite and anchor_i == 0
+
+        override = MANUAL_OVERRIDES.get((rec.get("Name") or "").strip())
+        if override:
+            k = parse_address(override["addr"])
+            if k:
+                pool = by_street.get(k[1]) or by_street.get(street_core(k[1]), [])
+                # The address was checked by a person, so the size test is
+                # waived (need=0) — District Haus is eight six-flats, none of
+                # which alone holds its 14 ARO units. The permit must still be
+                # a building; new construction first, then the earliest.
+                for n, p, kind in sorted(pool, key=lambda x: (x[2] != "new", x[1]["issue_date"])):
+                    if n == k[0] and p["permit_"] not in claimed:
+                        if plausible(p, 0, cls) is not None:
+                            best = ((-1,), p, 0, kind, -1)
+                            break
+
+        def consider(tier, num, street, gap, p, kind, shared=False):
+            nonlocal best
+            if p["permit_"] in claimed and not shared:
+                return
+            # A shared off-site match may legitimately need more than its own
+            # building holds — the receiving site can be several buildings
+            # filed together — so it also gets the complex-capacity fallback.
+            units = plausible(p, need, cls, require_count=(kind == "conversion"),
+                               permit_index=(permit_by_id if shared else None))
+            if units is None:
+                return
+            rank = (tier, 0 if gap == 0 else 1, 0 if kind == "new" else 1,
+                    -units, p["issue_date"])
+            if best is None or rank < best[0]:
+                best = (rank, p, gap, kind, tier)
+
+        def scan(tier, num, street):
             pool = by_street.get(street) or by_street.get(street_core(street), [])
             for n, p, kind in pool:
                 gap = abs(n - num)
                 if gap > ADDR_TOLERANCE:
-                    continue
-                if p["permit_"] in claimed and not shared:
                     continue
                 # Chicago's odd and even numbers face each other across the
                 # street, so a near miss of the wrong parity is a different
                 # building, not the same one.
                 if gap and (n % 2) != (num % 2):
                     continue
-                units = plausible(p, need, cls, require_count=(kind == "conversion"))
-                if units is None:
-                    continue
-                rank = (anchor_i, 0 if gap == 0 else 1, 0 if kind == "new" else 1,
-                        -units, p["issue_date"])
-                if best is None or rank < best[0]:
-                    best = (rank, p, gap, kind)
+                consider(tier, num, street, gap, p, kind)
+
+        rng = in_range_addresses(rec) if best is None else None
+        head = (rec.get("Match_addr") or "").split(",")[0].strip()
+        geo = parse_address(head) if best is None else None
+
+        if offsite and best is None:
+            k = parse_address(rec.get("If_off_sit"))
+            if k:
+                pool = by_street.get(k[1]) or by_street.get(street_core(k[1]), [])
+                for n, p, kind in pool:
+                    gap = abs(n - k[0])
+                    if gap > ADDR_TOLERANCE or (gap and (n % 2) != (k[0] % 2)):
+                        continue
+                    consider(0, k[0], k[1], gap, p, kind, shared=True)
+
+        if rng:
+            lo, hi, street = rng
+            # tier 1 — either declared endpoint, exactly
+            for endpoint in (lo, hi):
+                pool = by_street.get(street) or by_street.get(street_core(street), [])
+                for n, p, kind in pool:
+                    if n == endpoint:
+                        consider(1, endpoint, street, 0, p, kind)
+            # tier 2 — strictly inside the range, correct parity: a confirmed
+            # address even though it isn't a number named anywhere on record
+            pool = by_street.get(street) or by_street.get(street_core(street), [])
+            parity = lo % 2
+            for n, p, kind in pool:
+                if lo < n < hi and (n % 2) == parity:
+                    consider(2, n, street, 0, p, kind)
+            # tier 3 — proximity fallback from the geocoded end, last resort
+            if geo:
+                scan(3, geo[0], geo[1])
+        elif geo:
+            # no range: the geocoded address is exact if hit, else a guess
+            scan(1, geo[0], geo[1])
+
         if not best:
             return None
-        if not (offsite and best[0][0] == 0):
-            claimed.add(best[1]["permit_"])
-        return ("exact" if best[2] == 0 else "address", best[1], best[3])
+        _, p, gap, kind, tier = best
+        if not (offsite and tier == 0):
+            claimed.add(p["permit_"])
+        label = "manual" if tier == -1 else ("exact" if gap == 0 else "address")
+        return (label, p, kind)
 
     by_ward = collections.defaultdict(lambda: {
         "units": 0, "buildings": 0, "dated": 0, "offSite": 0,
@@ -365,6 +652,7 @@ def main():
     by_ward_year = collections.defaultdict(lambda: collections.defaultdict(int))
     projects = collections.defaultdict(list)
     undated, unplaced, dated_units = [], 0, 0
+    pre_series, undated_units = [], 0
     methods = collections.Counter()
     kinds = collections.Counter()
 
@@ -394,8 +682,20 @@ def main():
             by_ward_year[w][year] += units
             rec["dated"] += 1
             dated_units += units
+        elif (b.get("Name") or "").strip() in ESTIMATED_YEARS:
+            est = ESTIMATED_YEARS[(b.get("Name") or "").strip()]
+            how, year, kind = "estimated", est["year"], est["kind"]
+            by_year[year] += units
+            by_ward_year[w][year] += units
+            rec["dated"] += 1
+            dated_units += units
+        elif (b.get("Name") or "").strip() in PRE_SERIES:
+            how, year = "preSeries", PRE_SERIES_LABEL
+            kind = None  # kinds counts only units that appear in the series
+            pre_series.append(units)
         else:
             undated.append((b.get("Name") or "").strip() or b.get("Project_Ad"))
+            undated_units += units
         methods[how] += 1
         if kind:
             kinds[kind] += units
@@ -414,9 +714,13 @@ def main():
           f"{dated_units:,}/{total_units:,} units ({dated_units / total_units * 100:.0f}%)")
     print(f"    by exact address:     {methods['exact']}")
     print(f"    by address ±{ADDR_TOLERANCE}:      {methods['address']}")
+    print(f"    by manual override:   {methods['manual']}")
+    print(f"    by estimated year:    {methods['estimated']}")
+    print(f"  permitted before the series starts: {len(pre_series)} buildings, "
+          f"{sum(pre_series)} units")
     print(f"  units in new buildings: {kinds['new']:,}   in conversions: {kinds['conversion']:,}")
-    print(f"  undated (no plausible new-construction permit — mostly rehabs "
-          f"and conversions): {len(undated)}")
+    print(f"  undated (no building permit found): {len(undated)} buildings, "
+          f"{undated_units} units")
 
     payload = {
         "meta": {
@@ -429,10 +733,14 @@ def main():
             "datedUnits": dated_units,
             "datedShare": round(dated_units / total_units, 4),
             "undatedBuildings": len(undated),
+            "undatedUnits": undated_units,
+            "preSeriesBuildings": len(pre_series),
+            "preSeriesUnits": sum(pre_series),
+            "preSeriesLabel": PRE_SERIES_LABEL,
             "addrTolerance": ADDR_TOLERANCE,
             "unitsNewBuild": kinds["new"],
             "unitsConversion": kinds["conversion"],
-            "matchMethods": dict(methods),
+            "matchMethods": {k: methods[k] for k in ("exact", "address", "manual", "estimated")},
             "note": ("Rental ARO units only. Excludes for-sale ARO units and units "
                      "bought out through in-lieu fees. Years are the issue year of the "
                      "nearest new-construction permit, not a field in the source. "

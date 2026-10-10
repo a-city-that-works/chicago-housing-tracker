@@ -31,10 +31,10 @@ export interface AroProject {
   a: string;
   /** ARO units */
   u: number;
-  /** Permit year, or null where no permit matched */
+  /** Permit year; "pre-2010" where the permit predates the series; null where no permit matched */
   y: string | null;
   /** How that year was found. */
-  m: "exact" | "address" | "none";
+  m: "exact" | "address" | "manual" | "estimated" | "preSeries" | "none";
   /** Whether the permit was new construction or a conversion of an existing building. */
   k: "new" | "conversion" | null;
 }
@@ -50,10 +50,15 @@ export interface AroData {
     datedUnits: number;
     datedShare: number;
     undatedBuildings: number;
+    undatedUnits: number;
+    /** Buildings whose permit predates the permit record; dated, but off the series. */
+    preSeriesBuildings: number;
+    preSeriesUnits: number;
+    preSeriesLabel: string;
     addrTolerance: number;
     unitsNewBuild: number;
     unitsConversion: number;
-    matchMethods: { exact: number; address: number };
+    matchMethods: { exact: number; address: number; manual: number; estimated: number };
     note: string;
   };
   amiTiers: string[];

@@ -190,10 +190,12 @@ export function AffordableUnits() {
           </button>
         </div>
         <p className="af-caveat">
-          A further {(aro.meta.units - aro.meta.datedUnits).toLocaleString()} ARO units in{" "}
-          {aro.meta.undatedBuildings} buildings could not be dated to a construction permit and
-          are excluded from every figure here. They are mostly rehabs and loft conversions, which
-          never had a new-construction permit to match against.
+          A further {(aro.meta.units - aro.meta.datedUnits).toLocaleString()} ARO units are
+          excluded from every figure here: {aro.meta.preSeriesUnits} in{" "}
+          {aro.meta.preSeriesBuildings} buildings permitted before {FIRST}, when the permit record
+          used here begins, and {aro.meta.undatedUnits} in {aro.meta.undatedBuildings}{" "}
+          {aro.meta.undatedBuildings === 1 ? "building" : "buildings"} that could not be matched to
+          a building permit at all.
         </p>
       </section>
 
@@ -412,14 +414,27 @@ export function AffordableUnits() {
         projects permitted under one of several addresses. Matching on proximity was tried and
         abandoned: checked by hand, about half its matches were wrong. Every candidate must also
         plausibly be a residential building large enough to hold the ARO units, because otherwise
-        the permit nearest a site is often a tower crane, a hoist or a temporary event tent.
+        the permit nearest a site is often a tower crane, a hoist or a temporary event tent. A
+        further {aro.meta.matchMethods.manual} buildings were matched by hand, verified individually
+        against permit records &mdash; either to an address that appears nowhere in the source
+        record, or to a permit whose unit count could not be read automatically.
+        {aro.meta.matchMethods.estimated > 0 && (
+          <>
+            {" "}
+            {aro.meta.matchMethods.estimated} more{" "}
+            {aro.meta.matchMethods.estimated === 1 ? "has" : "have"} no building permit on record
+            and {aro.meta.matchMethods.estimated === 1 ? "is" : "are"} given an estimated year
+            from other records.{" "}
+          </>
+        )}
         Conversions are included: many ARO buildings are adaptive reuse rather than new
         construction, so renovation permits stating a unit count are searched too &mdash; of the
         units dated here, {aro.meta.unitsNewBuild.toLocaleString()} are in newly built
         structures and {aro.meta.unitsConversion.toLocaleString()} in converted ones. Dating
         succeeds for {Math.round(aro.meta.datedShare * 100)}% of units; because every figure on
-        this page is filtered by year, the {aro.meta.undatedBuildings} buildings that remain
-        undated are excluded throughout, so totals here run below the{" "}
+        this page is filtered by year, the{" "}
+        {aro.meta.undatedBuildings + aro.meta.preSeriesBuildings} buildings that are undated or
+        were permitted before {FIRST} are excluded throughout, so totals here run below the{" "}
         {aro.meta.units.toLocaleString()} units in the full source. Wards are recomputed on
         current (2023) boundaries, as on the Permitting Map. Two important exclusions: this covers rental
         ARO units only, not for-sale units, and it does not capture units that developers chose
