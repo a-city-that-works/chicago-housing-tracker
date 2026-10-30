@@ -145,6 +145,31 @@ dependency — it is a one-shot tool, so run it via `npx` when needed.
 
 ### Historical ward maps
 
+The annual **How wards change over time** chart on `/permitting` shows all 50
+wards across the full data history, with **Ward 27 highlighted by default**.
+It defaults to boundaries **at time of
+permit**, with current (2023) boundaries available for comparing the same areas
+over time. Its metric, boundary, and partial-year controls are independent of the
+map below. Hover previews a line; click/tap pins it. A ward picker, keyboard
+controls, year picker, and expandable annual data table provide alternatives.
+
+The metric dropdown sits beside ward boundaries and offers new housing units,
+single-family units, multifamily units, conversion unit change, and new units
+including conversions. SFH/MFH count homes, not buildings. The chart heading
+updates with the metric, highlighted ward, visible years, boundary basis, and
+partial-year coverage so screenshots retain their context.
+Conversions can be negative and exclude demolitions. The chart uses raw annual
+counts, never annualized rates; the incomplete final year is dashed and can be
+hidden. A linear scale includes zero and all values, and stays fixed when a ward
+is highlighted.
+
+Both remap dates are annotated at their exact positions within the year. In
+historical mode, a ward number can refer to different areas across remaps, and
+each transition-year total combines two boundary periods. Attribution coverage
+can differ between current and historical maps. See
+[`docs/ward-trends-validation.md`](docs/ward-trends-validation.md) for verification
+and a repeatable interaction checklist.
+
 The "at time of permit" view on `/permitting` draws one map per ward-boundary
 period the selected years cover, each on its own outlines:
 `public/chicago_wards_2003.json` (resource `72b6-8fe8`) and

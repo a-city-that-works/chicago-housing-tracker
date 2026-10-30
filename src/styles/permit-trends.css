@@ -1,0 +1,80 @@
+.pt { margin-bottom: 56px; scroll-margin-top: 90px; }
+.pt-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.pt-heading h2 { font-size: clamp(23px, 3vw, 30px); }
+.pt-heading p { margin-top: 8px; color: var(--muted); font-size: 15px; }
+.pt-heading a { flex-shrink: 0; font-size: 13px; }
+.pt-chart-heading { margin-bottom: 20px; }
+.pt-chart-heading h3 { font-size: clamp(21px, 2.4vw, 27px); line-height: 1.25; text-wrap: balance; }
+.pt-chart-context { margin-top: 8px; font-size: 15px; color: var(--muted); }
+.pt-chart-context strong { color: var(--ink); font-weight: 500; }
+.pt-chart-years { white-space: nowrap; }
+.pt-chart-coverage { margin-top: 4px; font-size: 12px; color: var(--muted); }
+.pt-definition { margin-top: 10px; max-width: 80ch; font-size: 13px; color: var(--muted); }
+.pt-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 20px; margin: 12px 0 28px; padding-bottom: 24px; border-bottom: 1px solid var(--rule); }
+.pt-controls label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--muted); }
+.pt select { border: 1px solid var(--rule); border-radius: 0; background: var(--ground); color: var(--ink); padding: 10px 30px 10px 10px; min-height: 44px; font: 400 14px var(--sans); cursor: pointer; }
+.pt-clear { background: var(--ground); border: 1px solid var(--rule); padding: 10px 14px; min-height: 44px; font-size: 13px; color: var(--accent-text); cursor: pointer; }
+.pt-clear:disabled { color: var(--muted); opacity: 0.55; cursor: default; }
+.pt-clear:not(:disabled):hover { background: var(--surface); }
+.pt-controls .pt-partial-toggle { flex-direction: row; align-items: center; align-self: end; min-height: 44px; margin-left: auto; font-size: 13px; cursor: pointer; }
+.pt-partial-toggle input { width: 18px; height: 18px; accent-color: var(--accent-text); }
+.pt-chart-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--muted); }
+.pt-legend { display: flex; align-items: center; gap: 8px; }
+.pt-legend i { width: 20px; height: 2px; background: var(--accent-text); display: inline-block; }
+.pt-legend .pt-selected-key { background: var(--highlight); margin-left: 12px; height: 3px; }
+.pt-chart { width: 100%; margin-top: 10px; }
+.pt-chart svg { width: 100%; display: block; overflow: visible; touch-action: pan-y; cursor: crosshair; }
+.pt-axis { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.pt-grid { stroke: var(--rule-soft); }
+.pt-zero { stroke: var(--muted); stroke-width: 1; }
+.pt-remap line { stroke: var(--muted); stroke-dasharray: 3 5; opacity: 0.7; }
+.pt-remap text { fill: var(--ink); font-size: 12px; font-weight: 500; }
+.pt-remap .pt-remap-date { fill: var(--muted); font-size: 11px; font-weight: 400; }
+.pt-partial-band { fill: var(--surface); }
+.pt-lines path { fill: none; stroke: var(--accent-text); stroke-width: 1.4; opacity: 0.65; }
+.pt-lines.has-active path { opacity: 0.15; }
+.pt-active path { fill: none; stroke: var(--highlight); stroke-width: 2.8; }
+.pt-active circle { fill: var(--ground); stroke: var(--highlight); stroke-width: 2; }
+.pt-active .pt-cursor { stroke: var(--highlight); stroke-width: 1; stroke-dasharray: 2 4; opacity: 0.5; }
+.pt-tooltip { pointer-events: none; }
+.pt-tooltip rect { fill: var(--ground); stroke: var(--rule); }
+.pt-tooltip text { fill: var(--ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+.pt-tooltip text:first-of-type { fill: var(--highlight-text); font-weight: 600; }
+.pt-readout { display: flex; align-items: center; justify-content: space-between; gap: 16px; background: var(--surface); border-top: 1px solid var(--rule); padding: 12px 16px; min-height: 72px; margin-top: 8px; font-size: 13px; }
+.pt-readout-value { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; font-variant-numeric: tabular-nums; }
+.pt-readout-value > span { color: var(--muted); }
+.pt-readout-value strong { font-size: 16px; font-weight: 600; }
+.pt-readout-value small { font-size: 13px; font-weight: 400; }
+.pt-readout.is-active strong:first-child { color: var(--highlight-text); }
+.pt-year { display: flex; align-items: center; gap: 8px; flex-shrink: 0; color: var(--muted); }
+.pt-year select { background: var(--surface); }
+.pt-interaction { font-size: 12px; color: var(--muted); min-height: 40px; padding-top: 8px; }
+.pt-boundaries { max-width: 90ch; font-size: 13px; color: var(--muted); margin-top: 12px; }
+.pt-boundaries strong { color: var(--ink); font-weight: 500; }
+.pt-notes { display: grid; gap: 5px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.pt-data { margin-top: 20px; font-size: 13px; border-block: 1px solid var(--rule); }
+.pt-data summary { padding: 14px 0; min-height: 44px; cursor: pointer; color: var(--accent-text); }
+.pt-table-scroll { overflow-x: auto; max-height: 380px; scrollbar-color: var(--muted) var(--surface); }
+.pt-data table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.pt-data caption { text-align: left; color: var(--muted); padding: 8px 0; }
+.pt-data th, .pt-data td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--rule-soft); white-space: nowrap; }
+.pt-data thead th { background: var(--surface); position: sticky; top: 0; }
+.pt-data th:first-child { text-align: left; }
+.pt ::selection { background: var(--accent-soft); color: var(--ink); }
+.pm-map-heading { font-size: 24px; margin-bottom: 20px; scroll-margin-top: 100px; }
+@media (max-width: 700px) {
+  .pt-heading { flex-direction: column; gap: 10px; }
+  .pt-controls .pt-partial-toggle { margin-left: 0; }
+  .pt-readout { align-items: start; }
+  .pt-readout-value { flex-direction: column; gap: 4px; }
+  .pt-readout { min-height: 120px; }
+}
+@media (max-width: 420px) {
+  .pt-chart-context { min-height: 48px; }
+  .pt-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+  .pt-controls .pt-boundary-control, .pt-controls .pt-metric-control, .pt-controls .pt-partial-toggle { grid-column: 1 / -1; }
+  .pt-controls select { width: 100%; }
+  .pt-clear { padding-inline: 10px; }
+  .pt-year { flex-direction: column; align-items: start; gap: 4px; }
+  .pt-year select { max-width: 128px; padding-right: 12px; }
+}
