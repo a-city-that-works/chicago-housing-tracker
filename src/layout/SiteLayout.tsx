@@ -31,6 +31,12 @@ export function SiteLayout() {
                 {s.nav}
               </NavLink>
             ))}
+            <NavLink
+              to="/other-maps"
+              className={({ isActive }) => (isActive ? "site-nav-link active" : "site-nav-link")}
+            >
+              Other Maps
+            </NavLink>
             <a href={BLOG_URL} target="_blank" rel="noreferrer" className="site-nav-link">
               Newsletter
             </a>
@@ -55,6 +61,7 @@ export function SiteLayout() {
           </div>
           <div className="footer-links">
             <NavLink to="/glossary">Glossary</NavLink>
+            <NavLink to="/other-maps">Other useful maps</NavLink>
             <a href={BLOG_URL} target="_blank" rel="noreferrer">
               Newsletter
             </a>

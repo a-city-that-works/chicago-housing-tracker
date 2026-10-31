@@ -326,6 +326,49 @@
   font-weight: 600;
 }
 
+/* Other useful maps */
+
+.tool-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tool-list-solo {
+  margin-top: 30px;
+}
+
+.tool-list li {
+  padding: 18px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.tool-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tool-by {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.tool-what {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.tool-checked {
+  margin-top: 36px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* Posts */
 
 .coverage-heading {

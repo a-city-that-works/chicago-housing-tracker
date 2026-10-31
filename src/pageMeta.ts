@@ -25,6 +25,11 @@ export const PAGES: PageMeta[] = [
     title: `Glossary — ${SITE_NAME}`,
     description: "AMI, ARO, tax credits, CHA and the other terms behind Chicago's housing numbers.",
   },
+  {
+    path: "other-maps",
+    title: `Other useful maps — ${SITE_NAME}`,
+    description: "Chicago housing maps, tools and games by other people and groups: zoning, ADUs, parking reform and housing costs.",
+  },
 ];
 
 export const pageMeta = (path: string): PageMeta =>

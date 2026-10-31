@@ -5,6 +5,7 @@ import { Affordability } from "./pages/Affordability";
 import { AffordableUnits } from "./pages/AffordableUnits";
 import { AffordableVsMarket } from "./pages/AffordableVsMarket";
 import { Glossary } from "./pages/Glossary";
+import { OtherMaps } from "./pages/OtherMaps";
 import { IncomeBuilding } from "./pages/IncomeBuilding";
 import { Permitting } from "./pages/Permitting";
 import { SectionStub } from "./pages/SectionStub";
@@ -22,6 +23,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="affordability" element={<Affordability />} />
           <Route path="glossary" element={<Glossary />} />
+          <Route path="other-maps" element={<OtherMaps />} />
           <Route path="permitting" element={<Permitting />} />
           <Route path="affordable" element={<AffordableUnits />} />
           <Route path="affordable-vs-market" element={<AffordableVsMarket />} />
