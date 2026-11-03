@@ -42,3 +42,6 @@ sources/
 
 # working to-do list, kept local
 BACKLOG.md
+
+# Local visual review evidence
+.impeccable/review/
